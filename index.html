@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn With AI (अभ्यास बिभ्यास) - AI-Powered Learning Tools & Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --accent: #f59e0b;
+            --success: #10b981;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 50%, #faf5ff 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        header.hero {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 60px 20px 50px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        .hero-title {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            max-width: 750px;
+            margin: 0 auto 20px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .hero-badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        main.container {
+            max-width: 1080px;
+            margin: -30px auto 60px;
+            padding: 0 20px;
+        }
+
+        .section-header {
+            margin: 40px 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-header h2 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-card:hover {
+            transform: translateY(-6px);
+            border-color: #93c5fd;
+            box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.15);
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+
+        .tag-live {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .tag-doc {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .app-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            background: #f1f5f9;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+        }
+
+        .app-card h3 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.45rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .app-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .btn-play {
+            background: var(--primary-gradient);
+            color: white;
+            text-decoration: none;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-play:hover {
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+            transform: scale(1.02);
+        }
+
+        .info-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            margin-top: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .info-card h3 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1 class="hero-title">🎓 Learn With AI (अभ्यास बिभ्यास)</h1>
+        <p class="hero-subtitle">
+            पालक आणि शिक्षकांसाठी AI-सक्षम शैक्षणिक खेळ, डिजिटल पुस्तके व सराव साधने. NEP 2020 व NCF मार्गदर्शक तत्त्वांवर आधारित.
+        </p>
+        <div class="hero-badges">
+            <span class="badge">🇮🇳 NEP 2020 & NCF Aligned</span>
+            <span class="badge">✨ Multilingual & Regional Mediums</span>
+            <span class="badge">🤖 Dynamic Gemini AI</span>
+            <span class="badge">⚡ 100% Free & Open Source</span>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <div class="section-header">
+            <h2>🎮 उपलब्ध खेळ व साधने (Available Apps & Tools)</h2>
+        </div>
+
+        <div class="cards-grid">
+            
+            <!-- App 1: AI Exam Prep Game -->
+            <div class="app-card">
+                <span class="card-tag tag-live">AI Game</span>
+                <div class="app-icon">🦁</div>
+                <h3>अभ्यास बिभ्यास: AI परीक्षा व सराव खेळ</h3>
+                <p>
+                    इयत्ता ३री मराठी बालभारतीसाठी सखोल AI चाचणी. स्वाध्याय, व्याकरण (लिंग, वचन, नाम, सर्वनाम), वाक्प्रचार, आणि पालकांसाठी तोंडी मूल्यमापन.
+                </p>
+                <a href="medium/marathi/grade3/games/play.html" class="btn-play">
+                    🚀 सराव खेळ सुरू करा (Play Game)
+                </a>
+            </div>
+
+            <!-- App 2: Interactive Reader -->
+            <div class="app-card">
+                <span class="card-tag tag-doc">Reader</span>
+                <div class="app-icon">📖</div>
+                <h3>बालभारती डिजिटल वाचक (Digital Reader)</h3>
+                <p>
+                    संपूर्ण १०० पानांचे ३री मराठी पाठ्यपुस्तक (२२ धडे व कविता). शोध, डार्क मोड, फॉन्ट स्केलर आणि प्रिंट वर्कशीट मोडसह संपूर्ण युनिकोड वाचन.
+                </p>
+                <a href="medium/marathi/grade3/marathi/Grade_3_Marathi_Balbharati.html" class="btn-play" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    📘 पुस्तक वाचा (Open Reader)
+                </a>
+            </div>
+
+            <!-- App 3: Markdown Syllabus -->
+            <div class="app-card">
+                <span class="card-tag tag-doc">Dataset</span>
+                <div class="app-icon">📚</div>
+                <h3>LLM-Ready अभ्यासक्रम डेटासेट</h3>
+                <p>
+                    RAG आणि AI ट्युटर्ससाठी पूर्णपणे युनिकोड व संरचित मराठी अभ्यासक्रम मार्कडाउन फाईल्स. कोणत्याही LLM मध्ये वापरण्यास सज्ज.
+                </p>
+                <a href="https://github.com/parthlawate/learnwithai" class="btn-play" style="background: linear-gradient(135deg, #475569 0%, #1e293b 100%);">
+                    📂 GitHub रिपॉझिटरी पहा
+                </a>
+            </div>
+
+        </div>
+
+        <div class="info-card">
+            <h3>💡 अभ्यास बिभ्यास संकल्पना (About the Initiative)</h3>
+            <p style="margin-bottom: 12px;">
+                दररोज संध्याकाळी ९:३० वाजता होणारा गृहपाठाचा संघर्ष आणि कंटाळवाणा घोकंपट्टीचा सराव थांबवून मुलांना शिकण्यात आनंद मिळवून देण्यासाठी ही संकल्पना सुरू झाली.
+            </p>
+            <p>
+                अधिक माहितीसाठी वाचा: 
+                <a href="https://magicofcreation.substack.com/p/abhyas-bibhyas-when-930-pm-homework" target="_blank" style="color: var(--primary); font-weight: 700;">
+                    Abhyas Bibhyas: When 9:30 PM Homework Resistance Became Innovation Lab ↗
+                </a>
+            </p>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>
+            <strong>Learn With AI</strong> • Open-source project created with ❤️ for kids, parents, and teachers.
+            <br>
+            Source Code on <a href="https://github.com/parthlawate/learnwithai" target="_blank">GitHub</a>.
+        </p>
+    </footer>
+
+</body>
+</html>
