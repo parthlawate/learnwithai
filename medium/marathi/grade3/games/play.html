@@ -182,6 +182,33 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
+        .api-key-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-test-key {
+            background: #eff6ff;
+            border: 1.5px solid #93c5fd;
+            color: #1d4ed8;
+            font-family: inherit;
+            font-weight: 600;
+            padding: 0 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .btn-test-key:hover {
+            background: #dbeafe;
+        }
+
+        #keyStatusMsg {
+            font-size: 0.82rem;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
         /* Mode Selector Radio Pills */
         .radio-grid {
             display: grid;
@@ -383,6 +410,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .q-tag {
@@ -401,7 +430,15 @@
             font-weight: 600;
             padding: 4px 10px;
             border-radius: 999px;
-            margin-left: 8px;
+        }
+
+        .q-source-tag {
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
         }
 
         .q-speech-btn {
@@ -681,15 +718,18 @@
 
                 <div class="grid-2">
                     <div class="form-group">
-                        <label for="apiKey">🔑 Gemini AI API Key (ऐच्छिक - ऑफलाइन प्रश्नसंच उपलब्ध)</label>
-                        <input type="password" id="apiKey" class="form-control" placeholder="AIzaSy...">
-                        <small style="color: #64748b; font-size: 0.8rem;">API की तुमच्या ब्राउझरमध्ये सुरक्षित सेव्ह राहते.</small>
+                        <label for="apiKey">🔑 Gemini AI API Key</label>
+                        <div class="api-key-wrapper">
+                            <input type="password" id="apiKey" class="form-control" placeholder="AIzaSy...">
+                            <button type="button" class="btn-test-key" onclick="testApiKey()">🔍 की तपासा</button>
+                        </div>
+                        <div id="keyStatusMsg"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="aiModel">🤖 AI मॉडेल निवडा</label>
                         <select id="aiModel" class="form-control">
-                            <option value="gemini-2.0-flash">Gemini 2.0 Flash (जलद व अचूक)</option>
+                            <option value="gemini-2.0-flash">Gemini 2.0 Flash (शिफारस केलेले)</option>
                             <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
                             <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                         </select>
@@ -808,9 +848,10 @@
 
             <div class="question-card" id="questionCard">
                 <div class="question-meta">
-                    <div>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                         <span class="q-tag" id="qCategory">व्याकरण</span>
                         <span class="q-chapter-tag" id="qChapterTag">धडा</span>
+                        <span class="q-source-tag" id="qSourceTag">🤖 Gemini AI</span>
                     </div>
                     <button class="q-speech-btn" title="प्रश्न ऐका" onclick="speakCurrentQuestion()">🔊</button>
                 </div>
@@ -989,7 +1030,50 @@
 
             // Load saved API key
             const savedKey = localStorage.getItem("gemini_api_key");
-            if (savedKey) document.getElementById("apiKey").value = savedKey;
+            if (savedKey) {
+                document.getElementById("apiKey").value = savedKey;
+                document.getElementById("keyStatusMsg").textContent = "💾 साठवलेली API Key उपलब्ध आहे.";
+                document.getElementById("keyStatusMsg").style.color = "#059669";
+            }
+        }
+
+        async function testApiKey() {
+            const key = document.getElementById("apiKey").value.trim();
+            const statusDiv = document.getElementById("keyStatusMsg");
+            if (!key) {
+                statusDiv.textContent = "⚠️ कृपया प्रथम API Key प्रविष्ट करा.";
+                statusDiv.style.color = "#d97706";
+                return;
+            }
+
+            statusDiv.textContent = "⏳ API Key तपासत आहे...";
+            statusDiv.style.color = "#2563eb";
+
+            try {
+                const model = document.getElementById("aiModel").value;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "Respond only with: OK" }] }]
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    const errMsg = errData?.error?.message || `HTTP ${res.status}`;
+                    statusDiv.textContent = `❌ त्रुटी: ${errMsg}`;
+                    statusDiv.style.color = "#dc2626";
+                } else {
+                    localStorage.setItem("gemini_api_key", key);
+                    statusDiv.textContent = `✅ API Key वैध आहे आणि Gemini AI (${model}) कनेक्ट झाले!`;
+                    statusDiv.style.color = "#16a34a";
+                }
+            } catch(e) {
+                statusDiv.textContent = `❌ नेटवर्क त्रुटी: ${e.message}`;
+                statusDiv.style.color = "#dc2626";
+            }
         }
 
         function filterPart(part, btn) {
@@ -1059,8 +1143,15 @@
                 try {
                     currentSessionQuestions = await generateWithGemini(key);
                 } catch(e) {
-                    console.warn("AI generation failed, strictly filtering curated bank by selected chapters:", e);
-                    currentSessionQuestions = getStrictFilteredFallbackQuestions();
+                    console.error("AI Generation Error:", e);
+                    document.getElementById("loadingModal").classList.remove("active");
+                    
+                    const proceedFallback = confirm(`⚠️ Gemini AI द्वारे प्रश्न तयार करताना त्रुटी आली:\n"${e.message}"\n\nतुम्हाला ऑफलाइन पाठ्यपुस्तक प्रश्नसंचासह पुढे जायचे आहे का?`);
+                    if (proceedFallback) {
+                        currentSessionQuestions = getStrictFilteredFallbackQuestions();
+                    } else {
+                        return;
+                    }
                 }
             } else {
                 await new Promise(r => setTimeout(r, 600));
@@ -1132,7 +1223,7 @@ Return a valid JSON ARRAY of objects. Each object must have:
 - "modelAnswer": Comprehensive model answer (for oral/subjective)
 - "rubric": 1-line parent grading criteria (for oral/subjective)
 
-Return ONLY the raw JSON array.`;
+Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const res = await fetch(url, {
@@ -1148,17 +1239,32 @@ Return ONLY the raw JSON array.`;
                 })
             });
 
-            if (!res.ok) throw new Error("API error: " + res.status);
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                const msg = errData?.error?.message || `HTTP ${res.status} (${res.statusText})`;
+                throw new Error(msg);
+            }
+
             const data = await res.json();
-            const text = data.candidates[0].content.parts[0].text;
+            let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error("Gemini AI कडून रिक्त उत्तर मिळाले.");
+
+            // Strip possible markdown wrapping
+            text = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+
             const parsed = JSON.parse(text);
-            return Array.isArray(parsed) ? parsed : getStrictFilteredFallbackQuestions();
+            if (!Array.isArray(parsed) || parsed.length === 0) {
+                throw new Error("AI उत्तराचे वैध प्रश्न सूचीमध्ये रूपांतर करता आले नाही.");
+            }
+
+            // Tag as AI generated
+            parsed.forEach(q => q._isAI = true);
+            return parsed;
         }
 
         function getStrictFilteredFallbackQuestions() {
             const filtered = FALLBACK_BANK.filter(q => sessionConfig.selectedChapters.includes(q.chapterId));
             if (filtered.length === 0) {
-                // If specific selected chapters have no pre-baked fallback, generate on the fly from chapter data
                 return sessionConfig.selectedChapters.map(id => {
                     const ch = CHAPTER_DATA[id];
                     return {
@@ -1167,10 +1273,12 @@ Return ONLY the raw JSON array.`;
                         type: "oral",
                         question: `'${ch.title}' या पाठातून / कवितेतून आपल्याला काय शिकायला मिळते?`,
                         modelAnswer: `विद्यार्थ्याने '${ch.title}' चा मुख्य आशय व बोध स्वतःच्या शब्दांत सांगावा.`,
-                        rubric: "धड्याचा मुख्य संदेश व २-३ सुसंगत वाक्ये सांगितल्यास पूर्ण गुण."
+                        rubric: "धड्याचा मुख्य संदेश व २-३ सुसंगत वाक्ये सांगितल्यास पूर्ण गुण.",
+                        _isAI: false
                     };
                 });
             }
+            filtered.forEach(q => q._isAI = false);
             return filtered;
         }
 
@@ -1201,6 +1309,18 @@ Return ONLY the raw JSON array.`;
                 chTag.style.display = "inline-block";
             } else {
                 chTag.style.display = "none";
+            }
+
+            // Show source badge (AI vs Offline)
+            const sourceTag = document.getElementById("qSourceTag");
+            if (q._isAI) {
+                sourceTag.textContent = "🤖 Gemini AI (Dynamic)";
+                sourceTag.style.background = "#dcfce7";
+                sourceTag.style.color = "#15803d";
+            } else {
+                sourceTag.textContent = "📂 पाठ्यपुस्तक ऑफलाइन बँक";
+                sourceTag.style.background = "#fef3c7";
+                sourceTag.style.color = "#92400e";
             }
 
             document.getElementById("questionText").textContent = q.question;
