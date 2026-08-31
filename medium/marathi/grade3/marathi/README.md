@@ -54,3 +54,13 @@
 - **२१. ग्रंथ मंदिर (कविता)** - बाबूराव शिरसाट
 - **२२. संतवाणी** (संत जनाबाई, संत सावता माळी)
 - **परिशिष्ट:** बालसुरक्षा हक्क (POCSO, Childline 1098) आणि राज्यगीत (जय जय महाराष्ट्र माझा)
+
+---
+
+## 📚 Source Material, Attribution & Copyright Policy
+
+- **Original Source PDF**: [Maharashtra State Bureau of Textbook Production & Curriculum Research (Balbharati) - Grade 3 Marathi Textbook](https://ebooks.ebalbharati.in/pdfs/301060001.pdf) (E-Balbharati Book Code: `301060001`).
+- **Publisher & Copyright Holder**: Maharashtra State Bureau of Textbook Production & Curriculum Research (*महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ, "बालभारती", पुणे*).
+- **Balbharati Copyright Policy**: According to the official [Balbharati Copyright Policy](https://ebalbharati.in/main/copyright.html):
+  > *"Material featured on this portal may be reproduced free of charge in any format or media without requiring specific permission. This is subject to the material being reproduced accurately and not being used in a derogatory manner or in a misleading context. Where the material is being published or issued to others, the source must be prominently acknowledged."*
+- **Purpose**: This repository digitizes the textbook into clean Unicode Devanagari format strictly for non-commercial, educational, assistive learning, and accessibility purposes (enabling modern screen readers, AI study assistance, and interactive learning games for students, parents, and teachers).

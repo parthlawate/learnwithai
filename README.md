@@ -163,7 +163,20 @@ We are building a community of parents, educators, and developers who believe in
 
 ---
 
-## 📜 License & Acknowledgments
+## 📚 Data Sources, Citation & Copyright Policies
 
-- **Code & Game Engines**: Open-sourced under the [MIT License](LICENSE).
-- **Curriculum Assets**: Digitized strictly for educational, research, and non-commercial assistive learning purposes with respect to respective educational boards.
+We are committed to open educational access, academic integrity, and honoring the copyright of curriculum production bodies:
+
+### 🇮🇳 Maharashtra State Board (Balbharati) Materials
+- **Source Textbook PDF**: [Balbharati Grade 3 Marathi Textbook (इयत्ता ३री मराठी बालभारती)](https://ebooks.ebalbharati.in/pdfs/301060001.pdf) (E-Balbharati Book ID: `301060001`).
+- **Publisher**: Maharashtra State Bureau of Textbook Production & Curriculum Research (*महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ, "बालभारती", पुणे*).
+- **Official Policy Alignment**: In accordance with the [Balbharati Copyright Policy](https://ebalbharati.in/main/copyright.html):
+  > *"Material featured on this portal may be reproduced free of charge in any format or media without requiring specific permission. This is subject to the material being reproduced accurately and not being used in a derogatory manner or in a misleading context. Where the material is being published or issued to others, the source must be prominently acknowledged."*
+- **Usage Context**: The digitization into standard Unicode Devanagari format is provided free of charge for non-commercial educational study, homework assistance, assistive tools, and LLM-grounded educational exploration.
+
+---
+
+## 📜 License
+
+- **Code, Game Engines & Tools**: Open-sourced under the [MIT License](LICENSE).
+- **Curriculum & Source Content**: Belongs to respective educational boards (e.g. Balbharati, NCERT, SCERT) and cited in compliance with public educational use policies.
