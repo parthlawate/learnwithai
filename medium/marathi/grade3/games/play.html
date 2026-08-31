@@ -2798,6 +2798,18 @@ LANGUAGE, VOCABULARY & COMPETENCY CONSTRAINTS:
 - Keep sentences short, conversational, and easy for an 8-year-old to understand.`;
             }
 
+            
+            let subjectSpecificOverrides = "";
+            if (currentSubject === "mathematics") {
+                subjectSpecificOverrides = `
+MATH FORMATTING & NEP/NCF GUIDELINES FOR GRADE 3 (CONCRETE & VISUAL):
+- AVOID THEORETICAL TEXT: Do not generate heavy, text-based theoretical questions (e.g., "Explain what multiplication is"). 
+- GENERATE ACTUAL SUMS & PROBLEMS: The child must calculate, count, measure, or solve. Generate concrete numerical equations (+, -, ×, ÷).
+- MINIMAL READING, HIGH VISUALS: An 8-year-old should grasp the problem instantly. Use emojis (🍎, 🚗, 💰, 🕒, 📏, 🟩) to visually represent quantities in word problems (Concrete-Pictorial-Abstract approach).
+- CLEAN MATHEMATICAL RENDERING: Use clear mathematical operators (+, -, ×, ÷). Use bold text for numbers and equations (e.g., **४५ + २३ = ?**).
+- EVERYDAY CONTEXT: Frame word problems in highly familiar contexts (buying vegetables, sharing chocolates, looking at a clock).`;
+            }
+
             const prompt = `You are a master Grade 3 primary school teacher creating an educational practice session for Subject: ${subj.title}.
 
 STRICT CHAPTER BOUNDARY MANDATE:
@@ -2810,6 +2822,7 @@ CRITICAL RULES:
 3. ${modeDirective}
 4. ${langInstruction}
 5. Retain child curiosity and prioritize critical thinking while ensuring rigorous mastery.
+6. ${subjectSpecificOverrides}
 
 SOURCE TEXT:
 ${selectedSourceText}
