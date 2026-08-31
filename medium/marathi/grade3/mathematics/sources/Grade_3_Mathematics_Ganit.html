@@ -3,39 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>गणित - इयत्ता तिसरी डिजिटल वाचक (Balbharati Mathematics Grade 3)</title>
+    <title>गणित - इयत्ता तिसरी - Digital Reader</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Marked.js for markdown rendering -->
+    <!-- Marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         :root {
-            --bg-color: #f8fafc;
-            --text-color: #0f172a;
+            --bg-body: #f8fafc;
+            --text-main: #0f172a;
             --card-bg: #ffffff;
-            --primary: #059669;
-            --primary-dark: #047857;
-            --primary-light: #ecfdf5;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
             --border: #e2e8f0;
             --accent: #f59e0b;
-            --font-main: 'Noto Sans Devanagari', -apple-system, sans-serif;
+            --font-main: 'Noto Sans Devanagari', 'Baloo 2', -apple-system, sans-serif;
             --font-size: 17px;
-            --line-height: 1.7;
-            --sidebar-width: 320px;
+            --line-height: 1.8;
+            --sidebar-w: 310px;
         }
 
         body.dark-theme {
-            --bg-color: #0f172a;
-            --text-color: #f1f5f9;
+            --bg-body: #0f172a;
+            --text-main: #f1f5f9;
             --card-bg: #1e293b;
-            --primary: #34d399;
-            --primary-dark: #10b981;
-            --primary-light: #064e3b;
+            --primary: #60a5fa;
+            --primary-light: #1e293b;
             --border: #334155;
             --accent: #fbbf24;
         }
@@ -46,17 +44,17 @@
             font-family: var(--font-main);
             font-size: var(--font-size);
             line-height: var(--line-height);
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             display: flex;
             height: 100vh;
             overflow: hidden;
             transition: background-color 0.2s, color 0.2s;
         }
 
-        /* Sidebar Navigation */
+        /* Sidebar */
         aside.sidebar {
-            width: var(--sidebar-width);
+            width: var(--sidebar-w);
             background: var(--card-bg);
             border-right: 1px solid var(--border);
             display: flex;
@@ -68,24 +66,27 @@
         .sidebar-header {
             padding: 20px;
             border-bottom: 1px solid var(--border);
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
         }
 
         .sidebar-header h2 {
             font-family: 'Baloo 2', sans-serif;
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 800;
+            line-height: 1.2;
         }
 
         .sidebar-header p {
-            font-size: 0.85rem;
-            opacity: 0.9;
+            font-size: 0.82rem;
+            opacity: 0.92;
+            margin-top: 4px;
         }
 
         .search-box {
             padding: 12px 16px;
             border-bottom: 1px solid var(--border);
+            background: var(--card-bg);
         }
 
         .search-box input {
@@ -93,51 +94,72 @@
             padding: 8px 12px;
             border-radius: 8px;
             border: 1px solid var(--border);
-            background: var(--bg-color);
-            color: var(--text-color);
+            background: var(--bg-body);
+            color: var(--text-main);
             font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
         }
 
         .nav-list {
             overflow-y: auto;
             flex-grow: 1;
-            padding: 12px;
+            padding: 10px;
+        }
+
+        .nav-group-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            padding: 10px 8px 4px;
         }
 
         .nav-item {
-            padding: 10px 14px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 0.92rem;
             font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
+            gap: 6px;
+            margin-bottom: 3px;
             transition: all 0.15s;
+            color: var(--text-main);
         }
 
         .nav-item:hover {
             background: var(--primary-light);
-            color: var(--primary-dark);
+            color: var(--primary);
+            transform: translateX(3px);
         }
 
-        /* Main Content */
+        /* Main Content Container */
         main.main-content {
-            flex-grow: 1;
+            flex: 1;
+            width: 100%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-width: 0;
         }
 
-        /* Top Toolbar */
+        /* Toolbar */
         header.toolbar {
-            padding: 12px 24px;
+            height: 56px;
+            padding: 0 24px;
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
 
         .toolbar-group {
@@ -147,54 +169,148 @@
         }
 
         .tool-btn {
-            background: var(--bg-color);
+            background: var(--bg-body);
             border: 1px solid var(--border);
-            color: var(--text-color);
+            color: var(--text-main);
             padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 4px;
             font-family: inherit;
+            transition: all 0.15s;
         }
 
+        .tool-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Reading Pane */
         .content-area {
-            flex-grow: 1;
+            flex: 1;
             overflow-y: auto;
-            padding: 40px 60px;
+            padding: 40px 30px;
             scroll-behavior: smooth;
+            width: 100%;
         }
 
         .markdown-body {
             max-width: 860px;
+            width: 100%;
             margin: 0 auto;
             background: var(--card-bg);
-            padding: 40px;
-            border-radius: 16px;
+            padding: 45px;
+            border-radius: 18px;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            word-wrap: break-word;
         }
 
-        .markdown-body h1 { font-family: 'Baloo 2', sans-serif; font-size: 2rem; color: var(--primary-dark); margin-bottom: 16px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
-        .markdown-body h2 { font-family: 'Baloo 2', sans-serif; font-size: 1.5rem; color: var(--primary-dark); margin: 30px 0 14px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-        .markdown-body h3 { font-family: 'Baloo 2', sans-serif; font-size: 1.25rem; margin: 20px 0 8px; color: #1e293b; }
-        .markdown-body p { margin-bottom: 14px; }
-        .markdown-body hr { margin: 30px 0; border: 0; border-top: 1px dashed var(--border); }
-        .markdown-body blockquote { border-left: 4px solid var(--primary); padding: 8px 16px; background: var(--primary-light); margin-bottom: 16px; border-radius: 0 8px 8px 0; }
-        .markdown-body table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 0.95rem; }
-        .markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
-        .markdown-body th { background: var(--primary-light); font-weight: 700; color: var(--primary-dark); }
-        .markdown-body ul, .markdown-body ol { margin-left: 24px; margin-bottom: 14px; }
+        .markdown-body h1 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 16px;
+            border-bottom: 2.5px solid var(--border);
+            padding-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .markdown-body h2 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 36px 0 16px;
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .markdown-body h3 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 24px 0 10px;
+            color: #334155;
+        }
+
+        .markdown-body p {
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        .markdown-body hr {
+            margin: 36px 0;
+            border: 0;
+            border-top: 1.5px dashed var(--border);
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary);
+            padding: 12px 20px;
+            background: var(--primary-light);
+            margin: 18px 0;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.95rem;
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 0.95rem;
+        }
+
+        .markdown-body th, .markdown-body td {
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        .markdown-body th {
+            background: var(--primary-light);
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-left: 28px;
+            margin-bottom: 16px;
+        }
+
+        .markdown-body li {
+            margin-bottom: 6px;
+        }
+
+        .reader-footer {
+            background: var(--bg-body);
+            border-top: 1px solid var(--border);
+            padding: 20px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-top: 50px;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            aside.sidebar { display: none; }
+            .markdown-body { padding: 24px 18px; }
+            .content-area { padding: 16px 12px; }
+        }
 
         @media print {
             aside.sidebar, header.toolbar { display: none !important; }
             body { overflow: visible !important; height: auto !important; }
             main.main-content { overflow: visible !important; }
             .content-area { padding: 0 !important; overflow: visible !important; }
-            .markdown-body { box-shadow: none; border: none; padding: 0; }
+            .markdown-body { box-shadow: none; border: none; padding: 0; max-width: 100%; }
         }
     </style>
 </head>
@@ -203,49 +319,51 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <h2>📐 गणित - इयत्ता तिसरी</h2>
-            <p>महाराष्ट्र राज्य पाठ्यपुस्तक मंडळ (बालभारती)</p>
+            <p>महाराष्ट्र राज्य पाठ्यपुस्तक मंडळ</p>
         </div>
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 प्रकरण किंवा संकल्पना शोधा..." oninput="filterContent()">
+            <input type="text" id="searchInput" placeholder="🔍 शोधा / Search..." oninput="filterContent()">
         </div>
         <div class="nav-list" id="navList">
-<div class="nav-unit-header" style="font-weight: 700; color: var(--primary-dark); padding: 8px 10px; font-size: 0.85rem; text-transform: uppercase;">सर्व १४ प्रकरणे</div>
-            <div class="nav-item" onclick="scrollToText('१. सभोवताली शोधू आकार')">📐 १. सभोवताली शोधू आकार (पृष्ठ १-६)</div>
-            <div class="nav-item" onclick="scrollToText('२. संख्यांशी खेळू या')">📐 २. संख्यांशी खेळू या (पृष्ठ ७-२४)</div>
-            <div class="nav-item" onclick="scrollToText('३. बेरीज व वजाबाकी')">📐 ३. बेरीज व वजाबाकी (पृष्ठ २५-३६)</div>
-            <div class="nav-item" onclick="scrollToText('४. अपूर्णांक')">📐 ४. अपूर्णांक (पृष्ठ ३७-४६)</div>
-            <div class="nav-item" onclick="scrollToText('५. लांबी व वजन')">📐 ५. लांबी व वजन (पृष्ठ ४७-५३)</div>
-            <div class="nav-item" onclick="scrollToText('६. माहितीचे व्यवस्थापन')">📐 ६. माहितीचे व्यवस्थापन (पृष्ठ ५४-५८)</div>
-            <div class="nav-item" onclick="scrollToText('७. नजरी नकाशा')">📐 ७. नजरी नकाशा (पृष्ठ ५९-६५)</div>
-            <div class="nav-item" onclick="scrollToText('८. गुणाकार')">📐 ८. गुणाकार (पृष्ठ ६६-७९)</div>
-            <div class="nav-item" onclick="scrollToText('९. भागाकार')">📐 ९. भागाकार (पृष्ठ ८०-९१)</div>
-            <div class="nav-item" onclick="scrollToText('१०. आकारांची गंमत भारी')">📐 १०. आकारांची गंमत भारी (पृष्ठ ९२-१०२)</div>
-            <div class="nav-item" onclick="scrollToText('११. सममिती')">📐 ११. सममिती (पृष्ठ १०३-१०६)</div>
-            <div class="nav-item" onclick="scrollToText('१२. आकारमान व धारकता')">📐 १२. आकारमान व धारकता (पृष्ठ १०७-११०)</div>
-            <div class="nav-item" onclick="scrollToText('१३. कालमापन')">📐 १३. कालमापन (पृष्ठ १११-११८)</div>
-            <div class="nav-item" onclick="scrollToText('१४. आकृतिबंध')">📐 १४. आकृतिबंध (पृष्ठ ११९-१२६)</div>
-        </div>
-            <div class="nav-item" onclick="scrollToText('भाग २')">📏 भाग २: मापन व नकाशा (प्र. ५ ते ७)</div>
-            <div class="nav-item" onclick="scrollToText('भाग ३')">✖️ भाग ३: गुणाकार, भागाकार व आकार (प्र. ८ ते १०)</div>
-            <div class="nav-item" onclick="scrollToText('भाग ४')">⏰ भाग ४: धारकता, कालमापन व आकृतिबंध (प्र. ११ ते १४)</div>
+<div class="nav-group-title">भाग १ : संख्याज्ञान व क्रिया</div>
+            <div class="nav-item" onclick="scrollToText('१. सभोवताली शोधू आकार')">१. सभोवताली शोधू आकार (पृष्ठ १-६)</div>
+            <div class="nav-item" onclick="scrollToText('२. संख्यांशी खेळू या')">२. संख्यांशी खेळू या (पृष्ठ ७-२४)</div>
+            <div class="nav-item" onclick="scrollToText('३. बेरीज व वजाबाकी')">३. बेरीज व वजाबाकी (पृष्ठ २५-३६)</div>
+            <div class="nav-item" onclick="scrollToText('४. अपूर्णांक')">४. अपूर्णांक (पृष्ठ ३७-४६)</div>
+<div class="nav-group-title">भाग २ : मापन व नकाशा</div>
+            <div class="nav-item" onclick="scrollToText('५. लांबी व वजन')">५. लांबी व वजन (पृष्ठ ४७-५३)</div>
+            <div class="nav-item" onclick="scrollToText('६. माहितीचे व्यवस्थापन')">६. माहितीचे व्यवस्थापन (पृष्ठ ५४-५८)</div>
+            <div class="nav-item" onclick="scrollToText('७. नजरी नकाशा')">७. नजरी नकाशा (पृष्ठ ५९-६५)</div>
+<div class="nav-group-title">भाग ३ : गुणाकार, भागाकार व आकार</div>
+            <div class="nav-item" onclick="scrollToText('८. गुणाकार')">८. गुणाकार (पृष्ठ ६६-७९)</div>
+            <div class="nav-item" onclick="scrollToText('९. भागाकार')">९. भागाकार (पृष्ठ ८०-९१)</div>
+            <div class="nav-item" onclick="scrollToText('१०. आकारांची गंमत भारी')">१०. आकारांची गंमत भारी (पृष्ठ ९२-१०२)</div>
+<div class="nav-group-title">भाग ४ : धारकता, कालमापन व पॅटर्न</div>
+            <div class="nav-item" onclick="scrollToText('११. सममिती')">११. सममिती (पृष्ठ १०३-१०६)</div>
+            <div class="nav-item" onclick="scrollToText('१२. आकारमान व धारकता')">१२. आकारमान व धारकता (पृष्ठ १०७-११०)</div>
+            <div class="nav-item" onclick="scrollToText('१३. कालमापन')">१३. कालमापन (पृष्ठ १११-११८)</div>
+            <div class="nav-item" onclick="scrollToText('१४. आकृतिबंध')">१४. आकृतिबंध (पृष्ठ ११९-१२६)</div>
         </div>
     </aside>
 
     <main class="main-content">
         <header class="toolbar">
             <div class="toolbar-group">
-                <button class="tool-btn" onclick="toggleTheme()">🌓 Dark/Light Mode</button>
+                <button class="tool-btn" onclick="toggleTheme()">🌓 Dark/Light</button>
                 <button class="tool-btn" onclick="changeFontSize(1)">A+ फॉन्ट</button>
                 <button class="tool-btn" onclick="changeFontSize(-1)">A- फॉन्ट</button>
             </div>
             <div class="toolbar-group">
-                <button class="tool-btn" onclick="window.print()">🖨️ प्रिंट / PDF सेव्ह करा</button>
+                <button class="tool-btn" onclick="window.print()">🖨️ प्रिंट / PDF</button>
             </div>
         </header>
 
         <div class="content-area" id="contentArea">
             <div class="markdown-body" id="markdownContainer">
                 <!-- Rendered Markdown -->
+            </div>
+            <div class="reader-footer">
+                <strong>स्रोत व कृतज्ञता निर्देश (Source Citation):</strong> मूळ अभ्यासक्रम: <a href="https://ebooks.ebalbharati.in/" target="_blank" style="color: #2563eb;">महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ (बालभारती), पुणे</a> | <a href="https://ebalbharati.in/main/copyright.html" target="_blank" style="color: #2563eb;">बालभारती कॉपीराइट धोरण</a> नुसार विनामूल्य शैक्षणिक वापर.
             </div>
         </div>
     </main>
@@ -5352,25 +5470,22 @@ $५, १०,$ **<u>१५</u>, <u>२०</u>, <u>२५</u>, <u>३०</u>, <u>
 </script>
 
     <script>
-        // Render Markdown
         const rawMd = document.getElementById("rawMarkdown").textContent;
         document.getElementById("markdownContainer").innerHTML = marked.parse(rawMd);
 
-        // Font scaling
         let currentSize = 17;
         function changeFontSize(delta) {
             currentSize = Math.max(14, Math.min(26, currentSize + delta));
             document.documentElement.style.setProperty('--font-size', currentSize + 'px');
         }
 
-        // Theme toggle
         function toggleTheme() {
             document.body.classList.toggle('dark-theme');
         }
 
         function scrollToText(str) {
-            const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-            const match = headings.find(h => h.textContent.includes(str));
+            const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, strong, p'));
+            const match = elements.find(el => el.textContent.trim().startsWith(str) || el.textContent.includes(str));
             if (match) match.scrollIntoView({ behavior: 'smooth' });
         }
 

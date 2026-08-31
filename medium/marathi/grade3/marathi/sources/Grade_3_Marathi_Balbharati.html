@@ -3,324 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>इयत्ता तिसरी मराठी बालभारती (मराठी माध्यम)</title>
+    <title>इयत्ता ३री मराठी बालभारती - Digital Reader</title>
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
         :root {
-            --primary: #1e40af;
-            --primary-light: #dbeafe;
-            --accent: #d97706;
             --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
+            --text-main: #0f172a;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
             --border: #e2e8f0;
-            --sidebar-w: 320px;
+            --accent: #f59e0b;
+            --font-main: 'Noto Sans Devanagari', 'Baloo 2', -apple-system, sans-serif;
+            --font-size: 17px;
+            --line-height: 1.8;
+            --sidebar-w: 310px;
         }
 
-        [data-theme="dark"] {
+        body.dark-theme {
+            --bg-body: #0f172a;
+            --text-main: #f1f5f9;
+            --card-bg: #1e293b;
             --primary: #60a5fa;
             --primary-light: #1e293b;
-            --accent: #f59e0b;
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
             --border: #334155;
+            --accent: #fbbf24;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: "Noto Sans Devanagari", "Baloo 2", -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: var(--font-main);
+            font-size: var(--font-size);
+            line-height: var(--line-height);
             background-color: var(--bg-body);
             color: var(--text-main);
-            line-height: 1.8;
-            font-size: 17px;
             display: flex;
             height: 100vh;
             overflow: hidden;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         /* Sidebar */
-        #sidebar {
+        aside.sidebar {
             width: var(--sidebar-w);
-            background: var(--bg-card);
+            background: var(--card-bg);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            height: 100%;
-            transition: transform 0.3s ease;
-            z-index: 50;
             flex-shrink: 0;
+            z-index: 10;
         }
 
         .sidebar-header {
-            padding: 20px 16px 12px;
+            padding: 20px;
             border-bottom: 1px solid var(--border);
-            background: var(--bg-card);
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
         }
 
-        .sidebar-header h1 {
-            font-size: 1.2rem;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 8px;
+        .sidebar-header h2 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .sidebar-header p {
+            font-size: 0.82rem;
+            opacity: 0.92;
+            margin-top: 4px;
+        }
+
+        .search-box {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-bg);
         }
 
         .search-box input {
             width: 100%;
             padding: 8px 12px;
-            border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 0.95rem;
+            border: 1px solid var(--border);
             background: var(--bg-body);
             color: var(--text-main);
             font-family: inherit;
+            font-size: 0.9rem;
             outline: none;
         }
+
         .search-box input:focus {
             border-color: var(--primary);
         }
 
-        .sidebar-nav {
+        .nav-list {
             overflow-y: auto;
-            flex: 1;
-            padding: 12px 8px;
+            flex-grow: 1;
+            padding: 10px;
         }
 
         .nav-group-title {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--accent);
-            padding: 12px 10px 4px;
+            padding: 10px 8px 4px;
         }
 
         .nav-item {
-            display: block;
             padding: 8px 12px;
-            margin-bottom: 2px;
             border-radius: 6px;
-            color: var(--text-main);
-            text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 3px;
             transition: all 0.15s;
+            color: var(--text-main);
         }
 
         .nav-item:hover {
             background: var(--primary-light);
             color: var(--primary);
+            transform: translateX(3px);
         }
 
-        .nav-item.active {
-            background: var(--primary);
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        /* Main Content */
-        #main-container {
+        /* Main Content Container */
+        main.main-content {
             flex: 1;
+            width: 100%;
             display: flex;
             flex-direction: column;
-            height: 100%;
             overflow: hidden;
+            min-width: 0;
         }
 
-        header.top-bar {
-            height: 60px;
-            background: var(--bg-card);
+        /* Toolbar */
+        header.toolbar {
+            height: 56px;
+            padding: 0 24px;
+            background: var(--card-bg);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
             flex-shrink: 0;
         }
 
-        .controls {
+        .toolbar-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        button.btn {
+        .tool-btn {
             background: var(--bg-body);
             border: 1px solid var(--border);
             color: var(--text-main);
             padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
-            font-family: inherit;
-            display: inline-flex;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            transition: background 0.15s;
-        }
-        button.btn:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
+            gap: 4px;
+            font-family: inherit;
+            transition: all 0.15s;
         }
 
-        #content-area {
+        .tool-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Reading Pane */
+        .content-area {
             flex: 1;
             overflow-y: auto;
-            padding: 32px 48px;
+            padding: 40px 30px;
             scroll-behavior: smooth;
+            width: 100%;
         }
 
-        .article-card {
+        .markdown-body {
             max-width: 860px;
-            margin: 0 auto 60px;
-            background: var(--bg-card);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            width: 100%;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 45px;
+            border-radius: 18px;
             border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            word-wrap: break-word;
         }
 
-        /* Typography & Markdown styling */
-        h1, h2, h3, h4 {
-            font-family: "Baloo 2", sans-serif;
+        .markdown-body h1 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 800;
             color: var(--primary);
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
+            margin-bottom: 16px;
+            border-bottom: 2.5px solid var(--border);
+            padding-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .markdown-body h2 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.6rem;
             font-weight: 700;
+            color: var(--primary);
+            margin: 36px 0 16px;
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 8px;
+            line-height: 1.3;
         }
 
-        h1 { font-size: 2.2rem; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
-        h2 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-        h3 { font-size: 1.4rem; color: var(--accent); }
-        h4 { font-size: 1.15rem; }
-
-        p {
-            margin-bottom: 1.2em;
-            text-align: justify;
+        .markdown-body h3 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 24px 0 10px;
+            color: #334155;
         }
 
-        blockquote {
-            border-left: 4px solid var(--accent);
-            background: var(--primary-light);
+        .markdown-body p {
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        .markdown-body hr {
+            margin: 36px 0;
+            border: 0;
+            border-top: 1.5px dashed var(--border);
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary);
             padding: 12px 20px;
-            margin: 16px 0;
-            border-radius: 0 8px 8px 0;
-            font-style: normal;
+            background: var(--primary-light);
+            margin: 18px 0;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.95rem;
         }
 
-        ul, ol {
-            margin: 12px 0 18px 24px;
-        }
-        li {
-            margin-bottom: 6px;
-        }
-
-        table {
+        .markdown-body table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 24px 0;
+            font-size: 0.95rem;
         }
 
-        th, td {
+        .markdown-body th, .markdown-body td {
             border: 1px solid var(--border);
             padding: 10px 14px;
             text-align: left;
         }
 
-        th {
-            background-color: var(--primary-light);
+        .markdown-body th {
+            background: var(--primary-light);
+            font-weight: 700;
             color: var(--primary);
-            font-weight: 600;
         }
 
-        hr {
-            border: none;
+        .markdown-body ul, .markdown-body ol {
+            margin-left: 28px;
+            margin-bottom: 16px;
+        }
+
+        .markdown-body li {
+            margin-bottom: 6px;
+        }
+
+        .reader-footer {
+            background: var(--bg-body);
             border-top: 1px solid var(--border);
-            margin: 32px 0;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-top: 50px;
+            border-radius: 10px;
         }
 
-        em {
-            color: var(--text-muted);
-        }
-
-        /* Mobile / Responsive */
-        @media (max-width: 900px) {
-            #sidebar {
-                position: fixed;
-                left: -320px;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.15);
-            }
-            #sidebar.open {
-                left: 0;
-            }
-            #content-area {
-                padding: 16px;
-            }
-            .article-card {
-                padding: 20px;
-            }
+        @media (max-width: 768px) {
+            aside.sidebar { display: none; }
+            .markdown-body { padding: 24px 18px; }
+            .content-area { padding: 16px 12px; }
         }
 
         @media print {
-            #sidebar, header.top-bar {
-                display: none !important;
-            }
-            #main-container, #content-area {
-                overflow: visible !important;
-                height: auto !important;
-                padding: 0 !important;
-            }
-            .article-card {
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                max-width: 100% !important;
-            }
+            aside.sidebar, header.toolbar { display: none !important; }
+            body { overflow: visible !important; height: auto !important; }
+            main.main-content { overflow: visible !important; }
+            .content-area { padding: 0 !important; overflow: visible !important; }
+            .markdown-body { box-shadow: none; border: none; padding: 0; max-width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <aside id="sidebar">
+    <aside class="sidebar">
         <div class="sidebar-header">
-            <h1>इयत्ता ३री मराठी बालभारती</h1>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="धडा, कविता, प्रश्न शोधा...">
-            </div>
+            <h2>📙 इयत्ता ३री मराठी बालभारती</h2>
+            <p>महाराष्ट्र राज्य पाठ्यपुस्तक मंडळ</p>
         </div>
-        <nav class="sidebar-nav" id="tocNav">
-            <!-- Dynamic TOC -->
-        </nav>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 शोधा / Search..." oninput="filterContent()">
+        </div>
+        <div class="nav-list" id="navList">
+<div class="nav-group-title">भाग १</div>
+            <div class="nav-item" onclick="scrollToText('१. शोधिशी मानवा')">१. शोधिशी मानवा (प्रार्थना)</div>
+            <div class="nav-item" onclick="scrollToText('वर्षासहल')">• वर्षासहल (चित्रवर्णन)</div>
+            <div class="nav-item" onclick="scrollToText('२. हिरवा वसा')">२. हिरवा वसा (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('३. गोष्ट तेनालीरामची')">३. गोष्ट तेनालीरामची</div>
+            <div class="nav-item" onclick="scrollToText('४. अंतराळवीर')">४. अंतराळवीर (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('५. हिरव्यागार झाडावर')">५. हिरव्यागार झाडावर</div>
+            <div class="nav-item" onclick="scrollToText('६. शुभ्राची परसबाग')">६. शुभ्राची परसबाग</div>
+<div class="nav-group-title">भाग २</div>
+            <div class="nav-item" onclick="scrollToText('७. टिंब')">७. टिंब (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('कसे मिळेल पाणी')">• कसे मिळेल पाणी ? (चित्रकथा)</div>
+            <div class="nav-item" onclick="scrollToText('८. खारीचा वाटा')">८. खारीचा वाटा</div>
+            <div class="nav-item" onclick="scrollToText('९. आम्ही ठाकर ठाकर')">९. आम्ही ठाकर ठाकर (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('१०. रेषांची जादू')">१०. रेषांची जादू</div>
+            <div class="nav-item" onclick="scrollToText('११. मामाची रंगीत गाडी')">११. मामाची रंगीत गाडी (कविता)</div>
+<div class="nav-group-title">भाग ३</div>
+            <div class="nav-item" onclick="scrollToText('प्रजासत्ताक दिन')">• प्रजासत्ताक दिन (चित्रवर्णन)</div>
+            <div class="nav-item" onclick="scrollToText('१२. फुलपाखरं आली')">१२. फुलपाखरं आली (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('१३. सावित्रीबाई फुले')">१३. सावित्रीबाई फुले</div>
+            <div class="nav-item" onclick="scrollToText('१४. सांग ना ओ माय')">१४. सांग ना ओ माय! (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('१५. रत्नपारखी')">१५. रत्नपारखी</div>
+            <div class="nav-item" onclick="scrollToText('१६. हिरकणी')">१६. हिरकणी</div>
+            <div class="nav-item" onclick="scrollToText('१७. तुला नव्या जगाची आण')">१७. तुला नव्या जगाची आण (कविता)</div>
+<div class="nav-group-title">भाग ४</div>
+            <div class="nav-item" onclick="scrollToText('समृद्ध ग्रंथालय')">• समृद्ध ग्रंथालय (चित्रवर्णन)</div>
+            <div class="nav-item" onclick="scrollToText('१८. माझे गाव')">१८. माझे गाव (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('१९. कागदाचा जन्म')">१९. कागदाचा जन्म</div>
+            <div class="nav-item" onclick="scrollToText('२०. संस्कार')">२०. संस्कार</div>
+            <div class="nav-item" onclick="scrollToText('२१. ग्रंथ मंदिर')">२१. ग्रंथ मंदिर (कविता)</div>
+            <div class="nav-item" onclick="scrollToText('२२. संतवाणी')">२२. संतवाणी (संत ज्ञानेश्वर, संत चोखामेळा)</div>
+        </div>
     </aside>
 
-    <div id="main-container">
-        <header class="top-bar">
-            <button class="btn" id="toggleSidebar" onclick="toggleMenu()">☰ अनुक्रमणिका</button>
-            <div class="controls">
-                <button class="btn" onclick="changeFontSize(1)">A+</button>
-                <button class="btn" onclick="changeFontSize(-1)">A-</button>
-                <button class="btn" onclick="toggleDarkMode()">🌓 थीम</button>
-                <button class="btn" onclick="window.print()">🖨️ प्रिंट / PDF</button>
+    <main class="main-content">
+        <header class="toolbar">
+            <div class="toolbar-group">
+                <button class="tool-btn" onclick="toggleTheme()">🌓 Dark/Light</button>
+                <button class="tool-btn" onclick="changeFontSize(1)">A+ फॉन्ट</button>
+                <button class="tool-btn" onclick="changeFontSize(-1)">A- फॉन्ट</button>
+            </div>
+            <div class="toolbar-group">
+                <button class="tool-btn" onclick="window.print()">🖨️ प्रिंट / PDF</button>
             </div>
         </header>
 
-        <main id="content-area">
-            <div class="article-card" id="markdownOutput">
-                <!-- Rendered Content -->
+        <div class="content-area" id="contentArea">
+            <div class="markdown-body" id="markdownContainer">
+                <!-- Rendered Markdown -->
             </div>
-        </main>
-    </div>
+            <div class="reader-footer">
+                <strong>स्रोत व कृतज्ञता निर्देश (Source Citation):</strong> मूळ अभ्यासक्रम: <a href="https://ebooks.ebalbharati.in/" target="_blank" style="color: #2563eb;">महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ (बालभारती), पुणे</a> | <a href="https://ebalbharati.in/main/copyright.html" target="_blank" style="color: #2563eb;">बालभारती कॉपीराइट धोरण</a> नुसार विनामूल्य शैक्षणिक वापर.
+            </div>
+        </div>
+    </main>
 
-    <script id="rawMarkdown" type="text/markdown"># इयत्ता तिसरी - मराठी बालभारती (मराठी माध्यम)
+    <script id="rawMarkdown" type="text/plain"># इयत्ता तिसरी - मराठी बालभारती (मराठी माध्यम)
+
+> **स्रोत व कृतज्ञता निर्देश (Source Citation & Attribution):**  
+> मूळ स्रोत पाठ्यपुस्तक: [महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ (बालभारती), पुणे](https://ebooks.ebalbharati.in/pdfs/301060001.pdf) (PDF Code: `301060001`).  
+> बालभारती कॉपीराइट धोरण: [Balbharati Copyright Policy](https://ebalbharati.in/main/copyright.html) नुसार शैक्षणिक व अभ्यासाच्या उद्देशाने अचूक युनिकोड प्रत तयार करण्यात आली आहे.  
+> हे डिजिटायझेशन पूर्णपणे विनाशुल्क, शैक्षणिक आणि विद्यार्थ्यांच्या सुलभ अध्ययनासाठी उपलब्ध केले आहे.
+
+---
 **महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ, पुणे**
 
 ---
@@ -3409,71 +3476,36 @@
 </script>
 
     <script>
-        const raw = document.getElementById("rawMarkdown").textContent;
-        const container = document.getElementById("markdownOutput");
-        
-        // Render Markdown
-        container.innerHTML = marked.parse(raw);
-
-        // Build Table of Contents
-        const nav = document.getElementById("tocNav");
-        const headings = container.querySelectorAll("h1, h2");
-        let currentGroup = null;
-
-        headings.forEach((h, idx) => {
-            const id = "sec-" + idx;
-            h.id = id;
-
-            if (h.tagName === "H1") {
-                const groupTitle = document.createElement("div");
-                groupTitle.className = "nav-group-title";
-                groupTitle.textContent = h.textContent;
-                nav.appendChild(groupTitle);
-            } else if (h.tagName === "H2") {
-                const link = document.createElement("a");
-                link.className = "nav-item";
-                link.href = "#" + id;
-                link.textContent = h.textContent;
-                link.onclick = () => {
-                    document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
-                    link.classList.add("active");
-                    if (window.innerWidth <= 900) {
-                        toggleMenu();
-                    }
-                };
-                nav.appendChild(link);
-            }
-        });
-
-        // Search Filter
-        document.getElementById("searchInput").addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase();
-            const items = nav.querySelectorAll(".nav-item");
-            items.forEach(item => {
-                const match = item.textContent.toLowerCase().includes(query);
-                item.style.display = match ? "block" : "none";
-            });
-        });
-
-        function toggleMenu() {
-            document.getElementById("sidebar").classList.toggle("open");
-        }
+        const rawMd = document.getElementById("rawMarkdown").textContent;
+        document.getElementById("markdownContainer").innerHTML = marked.parse(rawMd);
 
         let currentSize = 17;
         function changeFontSize(delta) {
             currentSize = Math.max(14, Math.min(26, currentSize + delta));
-            document.body.style.fontSize = currentSize + "px";
+            document.documentElement.style.setProperty('--font-size', currentSize + 'px');
         }
 
-        function toggleDarkMode() {
-            const theme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-            document.documentElement.setAttribute("data-theme", theme);
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+        }
+
+        function scrollToText(str) {
+            const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, strong, p'));
+            const match = elements.find(el => el.textContent.trim().startsWith(str) || el.textContent.includes(str));
+            if (match) match.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function filterContent() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const container = document.getElementById('markdownContainer');
+            if (!q) {
+                container.innerHTML = marked.parse(rawMd);
+                return;
+            }
+            const regex = new RegExp(`(${q})`, 'gi');
+            const highlighted = marked.parse(rawMd).replace(regex, '<mark>$1</mark>');
+            container.innerHTML = highlighted;
         }
     </script>
-
-<div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px; text-align: center; font-size: 0.85rem; color: #64748b; margin-top: 40px;">
-    <p><strong>स्रोत व कृतज्ञता (Source Citation):</strong> मूळ पाठ्यपुस्तक: <a href="https://ebooks.ebalbharati.in/pdfs/301060001.pdf" target="_blank" style="color: #2563eb;">महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ (बालभारती), पुणे</a> (Book ID: 301060001).</p>
-    <p>प्रस्तुत अचूक युनिकोड डिजिटायझेशन <a href="https://ebalbharati.in/main/copyright.html" target="_blank" style="color: #2563eb;">बालभारती कॉपीराइट धोरणांतर्गत</a> विनामूल्य शैक्षणिक व अभ्यासाच्या उद्देशाने उपलब्ध केले आहे.</p>
-</div>
 </body>
 </html>
