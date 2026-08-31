@@ -2780,9 +2780,23 @@ Do NOT stop generating until every single topic, exercise, and concept in the pr
                 modeDirective = "MODE: FUN CHILD SELF-SERVICE PLAY. Fast, joyful mini-puzzles, rhyming word pairs, riddles, and speed math challenges.";
             }
 
-            const langInstruction = (currentSubject === "english")
-                ? "Language: Questions, options, and model answers MUST be in English suited for Grade 3 students."
-                : "Language: Questions, options, and model answers MUST be in clean Devanagari Marathi suited for Grade 3 Marathi medium students.";
+            let langInstruction = "";
+            if (currentSubject === "english") {
+                langInstruction = `
+LANGUAGE, VOCABULARY & COMPETENCY CONSTRAINTS (ESL CONTEXT):
+- The student is an 8-year-old 3rd grader in a MARATHI-MEDIUM school.
+- English is their SECOND LANGUAGE (ESL). Their competency is at a beginner/foundational level.
+- You MUST strictly use ONLY grade-appropriate vocabulary. Stick entirely to words present in the provided source text or extremely basic sight words.
+- Keep sentence structures very short, simple, and direct. Avoid complex grammar, advanced phrasing, or idioms.
+- Questions, options, and model answers MUST be in simple Grade 3 ESL English.`;
+            } else {
+                langInstruction = `
+LANGUAGE, VOCABULARY & COMPETENCY CONSTRAINTS:
+- The student is an 8-year-old 3rd grader in a Marathi-medium school.
+- You MUST strictly use simple, grade-appropriate Devanagari Marathi.
+- Stick to the vocabulary provided in the source text. Avoid overly formal, pedantic, or difficult Sanskritized words unless they are explicitly taught in the text.
+- Keep sentences short, conversational, and easy for an 8-year-old to understand.`;
+            }
 
             const prompt = `You are a master Grade 3 primary school teacher creating an educational practice session for Subject: ${subj.title}.
 
