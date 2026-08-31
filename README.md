@@ -168,8 +168,10 @@ We are building a community of parents, educators, and developers who believe in
 We are committed to open educational access, academic integrity, and honoring the copyright of curriculum production bodies:
 
 ### 🇮🇳 Maharashtra State Board (Balbharati) Materials
-- **Source Textbook PDF**: [Balbharati Grade 3 Marathi Textbook (इयत्ता ३री मराठी बालभारती)](https://ebooks.ebalbharati.in/pdfs/301060001.pdf) (E-Balbharati Book ID: `301060001`).
-- **Publisher**: Maharashtra State Bureau of Textbook Production & Curriculum Research (*महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ, "बालभारती", पुणे*).
+- **Marathi Textbook (इयत्ता ३री मराठी बालभारती)**: [Balbharati Grade 3 Marathi PDF](https://ebooks.ebalbharati.in/pdfs/301060001.pdf) (Book Code: `301060001`).
+- **English Textbook (My English Book Three)**: [Balbharati Grade 3 English PDF](https://ebooks.ebalbharati.in/pdfs/303060035.pdf) (Book Code: `303060035`).
+- **Mathematics Textbook (इयत्ता ३री गणित - मराठी माध्यम)**: [Balbharati Grade 3 Mathematics PDF](https://ebooks.ebalbharati.in/pdfs/301060004.pdf) (Book Code: `301060004`).
+- **Publisher & Copyright Holder**: Maharashtra State Bureau of Textbook Production & Curriculum Research (*महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ, "बालभारती", पुणे*).
 - **Official Policy Alignment**: In accordance with the [Balbharati Copyright Policy](https://ebalbharati.in/main/copyright.html):
   > *"Material featured on this portal may be reproduced free of charge in any format or media without requiring specific permission. This is subject to the material being reproduced accurately and not being used in a derogatory manner or in a misleading context. Where the material is being published or issued to others, the source must be prominently acknowledged."*
 - **Usage Context**: The digitization into standard Unicode Devanagari format is provided free of charge for non-commercial educational study, homework assistance, assistive tools, and LLM-grounded educational exploration.

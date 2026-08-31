@@ -38,7 +38,7 @@
         header.hero {
             background: var(--primary-gradient);
             color: white;
-            padding: 60px 20px 50px;
+            padding: 50px 20px 45px;
             text-align: center;
             position: relative;
             box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
@@ -48,14 +48,14 @@
             font-family: 'Baloo 2', sans-serif;
             font-size: 2.8rem;
             font-weight: 800;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
 
         .hero-subtitle {
-            font-size: 1.2rem;
-            max-width: 750px;
-            margin: 0 auto 20px;
+            font-size: 1.15rem;
+            max-width: 800px;
+            margin: 0 auto 18px;
             opacity: 0.95;
             font-weight: 500;
         }
@@ -70,7 +70,7 @@
         .badge {
             background: rgba(255,255,255,0.2);
             backdrop-filter: blur(8px);
-            padding: 6px 14px;
+            padding: 5px 14px;
             border-radius: 999px;
             font-size: 0.85rem;
             font-weight: 600;
@@ -78,13 +78,13 @@
         }
 
         main.container {
-            max-width: 1080px;
-            margin: -30px auto 60px;
+            max-width: 1120px;
+            margin: -25px auto 60px;
             padding: 0 20px;
         }
 
         .section-header {
-            margin: 40px 0 20px;
+            margin: 35px 0 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -92,7 +92,7 @@
 
         .section-header h2 {
             font-family: 'Baloo 2', sans-serif;
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             color: var(--text-dark);
             display: flex;
             align-items: center;
@@ -102,13 +102,13 @@
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
+            gap: 22px;
         }
 
         .app-card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 28px;
+            padding: 26px;
             border: 1.5px solid var(--border);
             box-shadow: var(--shadow);
             display: flex;
@@ -120,15 +120,15 @@
         }
 
         .app-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-5px);
             border-color: #93c5fd;
             box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.15);
         }
 
         .card-tag {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 18px;
+            right: 18px;
             font-size: 0.75rem;
             font-weight: 700;
             padding: 4px 10px;
@@ -136,22 +136,17 @@
             text-transform: uppercase;
         }
 
-        .tag-live {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .tag-doc {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
+        .tag-game { background: #fef3c7; color: #b45309; }
+        .tag-marathi { background: #dbeafe; color: #1e40af; }
+        .tag-english { background: #ede9fe; color: #6d28d9; }
+        .tag-maths { background: #dcfce7; color: #15803d; }
 
         .app-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
+            font-size: 2.8rem;
+            margin-bottom: 14px;
             background: #f1f5f9;
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -160,15 +155,15 @@
 
         .app-card h3 {
             font-family: 'Baloo 2', sans-serif;
-            font-size: 1.45rem;
+            font-size: 1.4rem;
             color: var(--text-dark);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .app-card p {
             color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 20px;
+            font-size: 0.92rem;
+            margin-bottom: 18px;
             flex-grow: 1;
         }
 
@@ -176,10 +171,10 @@
             background: var(--primary-gradient);
             color: white;
             text-decoration: none;
-            padding: 14px 22px;
+            padding: 12px 20px;
             border-radius: 12px;
             font-family: 'Baloo 2', sans-serif;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 700;
             text-align: center;
             display: flex;
@@ -198,24 +193,24 @@
         .info-card {
             background: #ffffff;
             border-radius: 20px;
-            padding: 32px;
+            padding: 30px;
             border: 1px solid var(--border);
-            margin-top: 40px;
+            margin-top: 36px;
             box-shadow: var(--shadow);
         }
 
         .info-card h3 {
             font-family: 'Baloo 2', sans-serif;
-            font-size: 1.5rem;
-            margin-bottom: 12px;
+            font-size: 1.45rem;
+            margin-bottom: 10px;
             color: var(--primary-dark);
         }
 
         footer {
             text-align: center;
-            padding: 40px 20px;
+            padding: 36px 20px;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             border-top: 1px solid var(--border);
             background: white;
         }
@@ -236,56 +231,76 @@
         </p>
         <div class="hero-badges">
             <span class="badge">🇮🇳 NEP 2020 & NCF Aligned</span>
-            <span class="badge">✨ Multilingual & Regional Mediums</span>
-            <span class="badge">🤖 Dynamic Gemini AI</span>
+            <span class="badge">✨ Marathi, English & Mathematics</span>
+            <span class="badge">🤖 Gemini AI Dynamic Quizzes</span>
             <span class="badge">⚡ 100% Free & Open Source</span>
         </div>
     </header>
 
     <main class="container">
         
+        <!-- SECTION 1: AI GAMES -->
         <div class="section-header">
-            <h2>🎮 उपलब्ध खेळ व साधने (Available Apps & Tools)</h2>
+            <h2>🎮 AI शैक्षणिक खेळ (Interactive Games)</h2>
         </div>
 
         <div class="cards-grid">
-            
-            <!-- App 1: AI Exam Prep Game -->
             <div class="app-card">
-                <span class="card-tag tag-live">AI Game</span>
+                <span class="card-tag tag-game">AI Exam & HW Game</span>
                 <div class="app-icon">🦁</div>
                 <h3>अभ्यास बिभ्यास: AI परीक्षा व सराव खेळ</h3>
                 <p>
-                    इयत्ता ३री मराठी बालभारतीसाठी सखोल AI चाचणी. स्वाध्याय, व्याकरण (लिंग, वचन, नाम, सर्वनाम), वाक्प्रचार, आणि पालकांसाठी तोंडी मूल्यमापन.
+                    इयत्ता ३री साठी सखोल AI परीक्षा आणि गृहपाठ सराव खेळ. स्वाध्याय, व्याकरण (लिंग, वचन, नाम, सर्वनाम), गणित व इंग्रजी संकल्पना, आणि पालकांसाठी तोंडी मूल्यमापन.
                 </p>
                 <a href="medium/marathi/grade3/games/play.html" class="btn-play">
                     🚀 सराव खेळ सुरू करा (Play Game)
                 </a>
             </div>
+        </div>
 
-            <!-- App 2: Interactive Reader -->
+        <!-- SECTION 2: DIGITAL READERS -->
+        <div class="section-header">
+            <h2>📖 डिजिटल पाठ्यपुस्तके व वाचक (Interactive Digital Readers)</h2>
+        </div>
+
+        <div class="cards-grid">
+            
+            <!-- Marathi Reader -->
             <div class="app-card">
-                <span class="card-tag tag-doc">Reader</span>
-                <div class="app-icon">📖</div>
-                <h3>बालभारती डिजिटल वाचक (Digital Reader)</h3>
+                <span class="card-tag tag-marathi">मराठी</span>
+                <div class="app-icon">📙</div>
+                <h3>इयत्ता ३री मराठी बालभारती</h3>
                 <p>
-                    संपूर्ण १०० पानांचे ३री मराठी पाठ्यपुस्तक (२२ धडे व कविता). शोध, डार्क मोड, फॉन्ट स्केलर आणि प्रिंट वर्कशीट मोडसह संपूर्ण युनिकोड वाचन.
+                    संपूर्ण १०० पानांचे मराठी पाठ्यपुस्तक (२२ धडे व कविता). शोध, डार्क मोड, फॉन्ट स्केलर आणि प्रिंट वर्कशीट मोडसह संपूर्ण युनिकोड वाचन.
                 </p>
-                <a href="medium/marathi/grade3/marathi/Grade_3_Marathi_Balbharati.html" class="btn-play" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                    📘 पुस्तक वाचा (Open Reader)
+                <a href="medium/marathi/grade3/marathi/sources/Grade_3_Marathi_Balbharati.html" class="btn-play" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
+                    📘 मराठी पुस्तक उघडा (Open Reader)
                 </a>
             </div>
 
-            <!-- App 3: Markdown Syllabus -->
+            <!-- English Reader -->
             <div class="app-card">
-                <span class="card-tag tag-doc">Dataset</span>
-                <div class="app-icon">📚</div>
-                <h3>LLM-Ready अभ्यासक्रम डेटासेट</h3>
+                <span class="card-tag tag-english">English</span>
+                <div class="app-icon">📘</div>
+                <h3>My English Book Three</h3>
                 <p>
-                    RAG आणि AI ट्युटर्ससाठी पूर्णपणे युनिकोड व संरचित मराठी अभ्यासक्रम मार्कडाउन फाईल्स. कोणत्याही LLM मध्ये वापरण्यास सज्ज.
+                    Full 96-page English textbook (Units 1 to 4). Poems, stories, word families (-at, -in, -op), phonics, dialogues, and printable worksheets.
                 </p>
-                <a href="https://github.com/parthlawate/learnwithai" class="btn-play" style="background: linear-gradient(135deg, #475569 0%, #1e293b 100%);">
-                    📂 GitHub रिपॉझिटरी पहा
+                <a href="medium/marathi/grade3/english/sources/Grade_3_English_My_English_Book_Three.html" class="btn-play" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                    📗 Open English Reader
+                </a>
+            </div>
+
+            <!-- Mathematics Reader -->
+            <div class="app-card">
+                <span class="card-tag tag-maths">गणित</span>
+                <div class="app-icon">📐</div>
+                <h3>इयत्ता ३री गणित (मराठी माध्यम)</h3>
+                <p>
+                    संपूर्ण १४० पानांचे गणित पाठ्यपुस्तक (१४ प्रकरणे). ३ अंकी संख्या, लॅटिस गुणाकार, भागाकार, अपूर्णांक, भूमिती, मापन व दिनदर्शिका.
+                </p>
+                <a href="medium/marathi/grade3/mathematics/sources/Grade_3_Mathematics_Ganit.html" class="btn-play" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                    📐 गणित पुस्तक उघडा (Open Reader)
                 </a>
             </div>
 
@@ -293,7 +308,7 @@
 
         <div class="info-card">
             <h3>💡 अभ्यास बिभ्यास संकल्पना (About the Initiative)</h3>
-            <p style="margin-bottom: 12px;">
+            <p style="margin-bottom: 10px;">
                 दररोज संध्याकाळी ९:३० वाजता होणारा गृहपाठाचा संघर्ष आणि कंटाळवाणा घोकंपट्टीचा सराव थांबवून मुलांना शिकण्यात आनंद मिळवून देण्यासाठी ही संकल्पना सुरू झाली.
             </p>
             <p>
@@ -307,15 +322,16 @@
     </main>
 
     <footer>
-        <div style="max-width: 900px; margin: 0 auto; line-height: 1.6; font-size: 0.85rem;">
+        <div style="max-width: 960px; margin: 0 auto; line-height: 1.6;">
             <p style="margin-bottom: 8px;">
                 <strong>Learn With AI</strong> • Open-source project created with ❤️ for kids, parents, and teachers. | 
                 Source Code on <a href="https://github.com/parthlawate/learnwithai" target="_blank">GitHub</a>
             </p>
             <p style="color: #64748b;">
-                <strong>स्रोत व कृतज्ञता निर्देश (Source Citation):</strong> मराठी अभ्यासक्रम सामग्री 
-                <a href="https://ebooks.ebalbharati.in/pdfs/301060001.pdf" target="_blank">महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ (बालभारती), पुणे</a> 
-                येथून विनामूल्य शैक्षणिक वापरासाठी <a href="https://ebalbharati.in/main/copyright.html" target="_blank">बालभारती कॉपीराइट पॉलिसी</a> अंतर्गत उद्धृत केली आहे.
+                <strong>स्रोत व कृतज्ञता निर्देश (Source Citation):</strong> पाठ्यपुस्तक सामग्री 
+                <a href="https://ebooks.ebalbharati.in/" target="_blank">महाराष्ट्र राज्य पाठ्यपुस्तक निर्मिती व अभ्यासक्रम संशोधन मंडळ (बालभारती), पुणे</a> 
+                (मराठी: 301060001, English: 303060035, गणित: 301060004) येथून विनामूल्य शैक्षणिक वापरासाठी 
+                <a href="https://ebalbharati.in/main/copyright.html" target="_blank">बालभारती कॉपीराइट धोरणांतर्गत</a> उद्धृत केली आहे.
             </p>
         </div>
     </footer>
