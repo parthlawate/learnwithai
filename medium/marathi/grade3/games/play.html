@@ -2913,128 +2913,7 @@
             renderCurrentQuestion();
         }
 
-        async function generateWithGemini(apiKey) {
-            const model = document.getElementById("aiModel").value;
-            const subj = ALL_SUBJECTS[currentSubject];
-            
-            const selectedChapterObjects = sessionConfig.selectedChapters.map(id => subj.chapters[id]).filter(Boolean);
-            const selectedTitles = selectedChapterObjects.map(c => c.title).join(", ");
-            const selectedSourceText = selectedChapterObjects.map(c => `=== धडा/घटक: ${c.title} ===\n${c.content}\n=== समाप्त ===`).join("\n\n");
-
-            let modeDirective = "";
-            if (sessionConfig.mode === "exam_prep") {
-                modeDirective = `
-====================================================================
-MODE: 🏆 EXHAUSTIVE EXAM PREPARATION (सखोल परीक्षा पूर्वतयारी)
-====================================================================
-CRITICAL PEDAGOGICAL BLUEPRINT (NEP 2020 & NCF 2023 ALIGNED):
-You are preparing a student for an exhaustive, comprehensive evaluation. This framework applies universally to ALL subjects (Language, Mathematics, Science, etc.). You must derive the specific subject domain and context entirely from the provided textbook text.
-
-Your goal is 100% EXHAUSTIVE CURRICULUM COVERAGE. You must act as a systematic concept extractor. You must identify EVERY assessable node in the provided text (every concept, exercise, rule, formula, vocabulary word, historical event, or dialogue) and generate questions for ALL of them.
-DO NOT put any artificial limit on the number of questions. Do not summarize or skim. Whether it takes 15 questions or 150 questions, you must cover the material in its entirety.
-
-Generate questions across the following universal cognitive layers:
-
-LAYER 1: FOUNDATIONAL KNOWLEDGE & RECALL (ज्ञान व आकलन)
-- Direct factual extraction from the text (Who, What, Where, When).
-- Definitions, key vocabulary, historical facts, scientific terms, or character actions.
-- 'एका वाक्यात उत्तरे', 'रिकाम्या जागा भरा', etc.
-
-LAYER 2: PROCEDURAL & STRUCTURAL MASTERY (प्रक्रिया व रचना कौशल्य)
-- The mechanics of the subject.
-- If Language: Grammar, syntax, word-building, punctuation.
-- If Math/Science: Formulas, step-by-step problem-solving algorithms, processes.
-- Test the student's ability to execute the rules and procedures taught in the text.
-
-LAYER 3: ANALYTICAL & RELATIONAL THINKING (विश्लेषण व सहसंबंध)
-- Cause and effect ("Why did this happen?", "कारणे सांगा").
-- Sequencing of events, matching pairs, true/false with reasoning.
-- Identifying patterns or relationships between concepts.
-
-LAYER 4: APPLICATION & REAL-WORLD CONNECTION (उपयोजन व दैनंदिन जीवन)
-- Applying the textbook concept to a practical, real-world scenario outside the book.
-- Word problems, daily life applications, conversational use.
-
-LAYER 5: HIGHER-ORDER CRITICAL INQUIRY (विचार प्रवर्तक व चिकित्सक विचार)
-- "What if...?" (Hypothetical counterfactual scenarios).
-- Self-expression, evaluative judgments, and open-ended reasoning based on the text.
-- Teacher pedagogical prompts found in the text margins.
-
-EXHAUSTIVENESS MANDATE:
-Do NOT stop generating until every single topic, exercise, and concept in the provided text has been addressed. Ensure maximum depth and width.`;
-            } else if (sessionConfig.mode === "homework") {
-                const hwTopic = document.getElementById("hwTopicInput").value.trim();
-                const hwType = document.querySelector('input[name="hwType"]:checked')?.value || "written";
-                modeDirective = `MODE: DAY-TO-DAY HOMEWORK ASSISTANCE. Homework topic: '${hwTopic}'. Format: ${hwType === 'written' ? 'Notebook Writing Challenge with step-by-step guidance for physical notebook writing and parent validation' : 'Oral discussion and pronunciation drill'}.`;
-            } else if (sessionConfig.mode === "home_learning") {
-                modeDirective = "MODE: JOYFUL HOME LEARNING (ANTI-ROTE & CRITICAL THINKING). Focus on 'Why, How, and What-if' inquiry questions, real-life connections, experiments, and Higher-Order Thinking Skills (HOTS) rather than mechanical memorization.";
-            } else if (sessionConfig.mode === "mock_exam") {
-                modeDirective = "MODE: OFFICIAL MOCK EXAM SIMULATOR. Structure into standard school board exam sections: Q1 Fill in blanks/MCQ, Q2 One-line answers, Q3 Match pairs/True-False, Q4 Short answers & reasoning, Q5 Application/Grammar.";
-            } else if (sessionConfig.mode === "fun_learning") {
-                modeDirective = "MODE: FUN CHILD SELF-SERVICE PLAY. Fast, joyful mini-puzzles, rhyming word pairs, riddles, and speed math challenges.";
-            }
-
-            let langInstruction = "";
-            if (currentSubject === "english") {
-                langInstruction = `
-LANGUAGE, VOCABULARY & COMPETENCY CONSTRAINTS (ESL CONTEXT):
-- The student is an 8-year-old 3rd grader in a MARATHI-MEDIUM school.
-- English is their SECOND LANGUAGE (ESL). Their competency is at a beginner/foundational level.
-- You MUST strictly use ONLY grade-appropriate vocabulary. Stick entirely to words present in the provided source text or extremely basic sight words.
-- Keep sentence structures very short, simple, and direct. Avoid complex grammar, advanced phrasing, or idioms.
-- Questions, options, and model answers MUST be in simple Grade 3 ESL English.`;
-            } else {
-                langInstruction = `
-LANGUAGE, VOCABULARY & COMPETENCY CONSTRAINTS:
-- The student is an 8-year-old 3rd grader in a Marathi-medium school.
-- You MUST strictly use simple, grade-appropriate Devanagari Marathi.
-- Stick to the vocabulary provided in the source text. Avoid overly formal, pedantic, or difficult Sanskritized words unless they are explicitly taught in the text.
-- Keep sentences short, conversational, and easy for an 8-year-old to understand.`;
-            }
-
-            
-            let subjectSpecificOverrides = "";
-            if (currentSubject === "mathematics") {
-                subjectSpecificOverrides = `
-MATH FORMATTING & NEP/NCF GUIDELINES FOR GRADE 3 (CONCRETE & VISUAL):
-- AVOID THEORETICAL TEXT: Do not generate heavy, text-based theoretical questions (e.g., "Explain what multiplication is"). 
-- GENERATE ACTUAL SUMS & PROBLEMS: The child must calculate, count, measure, or solve. Generate concrete numerical equations (+, -, ×, ÷).
-- MINIMAL READING, HIGH VISUALS: An 8-year-old should grasp the problem instantly. Use emojis (🍎, 🚗, 💰, 🕒, 📏, 🟩) to visually represent quantities in word problems (Concrete-Pictorial-Abstract approach).
-- CLEAN MATHEMATICAL RENDERING: Use clear mathematical operators (+, -, ×, ÷). Use bold text for numbers and equations (e.g., **४५ + २३ = ?**).
-- EVERYDAY CONTEXT: Frame word problems in highly familiar contexts (buying vegetables, sharing chocolates, looking at a clock).`;
-            }
-
-            const prompt = `You are a master Grade 3 primary school teacher creating an educational practice session for Subject: ${subj.title}.
-
-STRICT CHAPTER BOUNDARY MANDATE:
-You are provided with the EXACT textbook source text for ONLY the following selected chapters:
-[ ${selectedTitles} ]
-
-CRITICAL RULES:
-1. You MUST ONLY generate questions from the text provided below.
-2. DO NOT include questions, characters, poems, or topics from ANY other chapter under any circumstances.
-3. ${modeDirective}
-4. ${langInstruction}
-5. Retain child curiosity and prioritize critical thinking while ensuring rigorous mastery.
-6. ${subjectSpecificOverrides}
-
-SOURCE TEXT:
-${selectedSourceText}
-
-OUTPUT FORMAT:
-Return a valid JSON ARRAY of objects. Each object must have:
-- "chapterTitle": Title of the chapter
-- "category": Topic tag (e.g. "व्याकरण", "वाचन स्वाध्याय", "का व कसे? विचार प्रवर्तक", "वहीतील लेखी कार्य", "Phonics", "Rhymes", "गुणाकार")
-- "type": "mcq" or "oral"
-- "question": Complete question string
-- "options": Array of 4 strings (only for mcq)
-- "answer": Correct answer string (only for mcq)
-- "explanation": Short reasoning
-- "modelAnswer": Comprehensive model answer (for oral/subjective/written notebook validation)
-- "rubric": 1-line parent grading criteria
-
-Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
-
+                async function fetchQuestions(model, apiKey, prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const res = await fetch(url, {
                 method: "POST",
@@ -3061,10 +2940,148 @@ Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
 
             text = text.replace(/```json/gi, "").replace(/```/g, "").trim();
             const parsed = JSON.parse(text);
-            if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("अवैध प्रश्न सूची.");
-
-            parsed.forEach(q => q._isAI = true);
+            if (!Array.isArray(parsed) || parsed.length === 0) return [];
             return parsed;
+        }
+
+        async function generateWithGemini(apiKey) {
+            const model = document.getElementById("aiModel").value;
+            const subj = ALL_SUBJECTS[currentSubject];
+            
+            const selectedChapterObjects = sessionConfig.selectedChapters.map(id => subj.chapters[id]).filter(Boolean);
+            
+            // Generate mode directives based on configuration
+            let modeDirective = "";
+            let expectedCountText = "";
+            
+            if (sessionConfig.mode === "exam_prep") {
+                modeDirective = `
+====================================================================
+MODE: 🏆 EXHAUSTIVE EXAM PREPARATION (सखोल परीक्षा पूर्वतयारी)
+====================================================================
+CRITICAL PEDAGOGICAL BLUEPRINT (NEP 2020 & NCF 2023 ALIGNED):
+Your goal is 100% EXHAUSTIVE CURRICULUM COVERAGE for the provided chapters. 
+You must identify EVERY assessable node in the provided text (every concept, exercise, rule, formula, vocabulary word, historical event, or dialogue) and generate questions for ALL of them.
+DO NOT put any artificial limit on the number of questions. Whether it takes 15 questions or 50 questions per chapter, cover the material in its entirety.
+
+Generate questions across the following universal cognitive layers:
+LAYER 1: FOUNDATIONAL KNOWLEDGE & RECALL
+LAYER 2: PROCEDURAL & STRUCTURAL MASTERY
+LAYER 3: ANALYTICAL & RELATIONAL THINKING
+LAYER 4: APPLICATION & REAL-WORLD CONNECTION
+LAYER 5: HIGHER-ORDER CRITICAL INQUIRY`;
+            } else if (sessionConfig.mode === "homework") {
+                const hwTopic = document.getElementById("hwTopicInput").value.trim();
+                modeDirective = `
+====================================================================
+MODE: 🏠 DAILY HOMEWORK (दैनंदिन गृहपाठ)
+====================================================================
+Create a targeted homework assignment based strictly on the following topic/focus: "${hwTopic}".
+Focus heavily on Application, Writing, and Problem Solving.`;
+            } else if (sessionConfig.mode === "home_learning") {
+                modeDirective = `
+====================================================================
+MODE: 🌱 HOME LEARNING / CONCEPT DISCOVERY (घरी शिकूया)
+====================================================================
+Focus on inquiry-based learning, curiosity, and real-world observation.
+Generate questions that ask the student to explore their house, talk to their parents, or observe nature based on the chapter.`;
+            } else if (sessionConfig.mode === "mock_test") {
+                modeDirective = `
+====================================================================
+MODE: 📝 MOCK EXAM (सराव परीक्षा)
+====================================================================
+Simulate a strict school exam. Balance the difficulty (40% easy, 40% medium, 20% hard).
+Include MCQs, fill-in-the-blanks, and short answers.`;
+            } else if (sessionConfig.mode === "fun_learning") {
+                modeDirective = `
+====================================================================
+MODE: 🎲 FUN LEARNING (खेळत शिकूया)
+====================================================================
+Create highly engaging, gamified questions. Use riddles, word puzzles, emoji math, and story-based scenarios. Keep it light and fun!`;
+            }
+
+            if (sessionConfig.count === "exhaustive") {
+                expectedCountText = "EXHAUSTIVE MODE: Generate as many questions as necessary to cover every single concept.";
+            } else if (sessionConfig.count === "auto") {
+                expectedCountText = "OPTIMAL MODE: Generate approximately 15 to 20 well-balanced questions.";
+            } else {
+                expectedCountText = `COUNT MODE: Generate EXACTLY ${sessionConfig.count} questions.`;
+            }
+
+            let langInstruction = (currentSubject === "english") 
+                ? "Generate ALL content, questions, and explanations strictly in ENGLISH. Keep vocabulary suitable for an 8-year-old ESL learner."
+                : "Generate ALL content, questions, options, and explanations STRICTLY in MARATHI (Devanagari script).";
+
+            let subjectSpecificOverrides = "";
+            if (currentSubject === "mathematics") {
+                subjectSpecificOverrides = `
+MATH FORMATTING & NEP/NCF GUIDELINES FOR GRADE 3 (CONCRETE & VISUAL):
+- AVOID THEORETICAL TEXT: Do not generate heavy, text-based theoretical questions.
+- GENERATE ACTUAL SUMS & PROBLEMS: The child must calculate, count, measure, or solve (+, -, ×, ÷).
+- MINIMAL READING, HIGH VISUALS: Use emojis (🍎, 🚗, 💰) to visually represent quantities in word problems.
+- CLEAN MATHEMATICAL RENDERING: Use clear operators and bold text (e.g., **४५ + २३ = ?**).`;
+            }
+            
+            // Build the base prompt template
+            const buildPrompt = (sourceText, chapterCount) => `
+You are an expert AI teacher generating an interactive test.
+1. You MUST ONLY generate questions from the text provided below.
+2. DO NOT include questions, characters, or topics from outside the text.
+3. ${modeDirective}
+4. ${langInstruction}
+5. ${expectedCountText} (For these ${chapterCount} chapter(s)).
+6. ${subjectSpecificOverrides}
+
+SOURCE TEXT:
+${sourceText}
+
+OUTPUT FORMAT:
+Return a JSON array of objects. Each object must have:
+- "chapterTitle": The title of the chapter this question belongs to.
+- "category": e.g., 'Layer 1: Recall', 'Grammar', 'Word Problem'
+- "type": "mcq" or "oral"
+- "question": Complete question string
+- "options": Array of 4 strings (only for mcq)
+- "answer": Correct answer string (only for mcq)
+- "explanation": Short reasoning
+- "modelAnswer": Comprehensive model answer (for oral)
+- "rubric": 1-line parent grading criteria
+
+Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
+
+            let allParsedQuestions = [];
+            
+            // If exhaustive mode and multiple chapters, chunk them to force the LLM to generate deeply
+            if (sessionConfig.mode === "exam_prep" && sessionConfig.count === "exhaustive" && selectedChapterObjects.length > 1) {
+                for (let i = 0; i < selectedChapterObjects.length; i++) {
+                    const c = selectedChapterObjects[i];
+                    document.getElementById("loadingStatusText").textContent = `सखोल परीक्षण: '${c.title}' मधील प्रश्न तयार करत आहे (${i+1}/${selectedChapterObjects.length})...`;
+                    const chunkText = `=== धडा/घटक: ${c.title} ===
+${c.content}
+=== समाप्त ===`;
+                    const prompt = buildPrompt(chunkText, 1);
+                    try {
+                        const parsed = await fetchQuestions(model, apiKey, prompt);
+                        allParsedQuestions = allParsedQuestions.concat(parsed);
+                    } catch(e) {
+                        console.warn("Failed chunk", c.title, e);
+                    }
+                }
+            } else {
+                // Standard single-shot generation
+                const selectedSourceText = selectedChapterObjects.map(c => `=== धडा/घटक: ${c.title} ===
+${c.content}
+=== समाप्त ===`).join("
+
+");
+                const prompt = buildPrompt(selectedSourceText, selectedChapterObjects.length);
+                allParsedQuestions = await fetchQuestions(model, apiKey, prompt);
+            }
+
+            if (allParsedQuestions.length === 0) throw new Error("AI ने शून्य प्रश्न तयार केले.");
+            
+            allParsedQuestions.forEach(q => q._isAI = true);
+            return allParsedQuestions;
         }
 
         function getStrictFilteredFallbackQuestions() {
