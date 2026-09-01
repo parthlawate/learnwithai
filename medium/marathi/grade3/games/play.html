@@ -649,7 +649,7 @@
             <div class="card">
                 <h2 class="section-title">📚 १. विषय निवडा (Choose Subject)</h2>
                 <div class="subject-grid">
-                    <div class="subject-card active" onclick="selectSubject('marathi', this)">
+                    <div class="subject-card" onclick="selectSubject('marathi', this)">
                         <div class="subject-card-icon">📙</div>
                         <div class="subject-card-info">
                             <strong>मराठी बालभारती</strong>
@@ -684,7 +684,7 @@
             <div class="card">
                 <h2 class="section-title">🎯 २. वापर व सराव पद्धती निवडा (Engagement Mode)</h2>
                 <div class="mode-grid">
-                    <div class="mode-pill active" onclick="setMode(this, 'exam_prep')">
+                    <div class="mode-pill" onclick="setMode(this, 'exam_prep')">
                         <strong>🏆 १. सखोल परीक्षा पूर्वतयारी (Exam Prep)</strong>
                         <span>संपूर्ण अभ्यासक्रम, स्वाध्याय, व्याकरण व सर्व घटकांचे १००% कव्हरेज</span>
                     </div>
@@ -2679,14 +2679,14 @@
   }
 ];
 
-        let currentSubject = "marathi";
+        let currentSubject = null;
         let currentSessionQuestions = [];
         let currentIndex = 0;
         let currentScore = 0;
         let currentStreak = 0;
         let sessionConfig = {
-            subject: "marathi",
-            mode: "exam_prep",
+            subject: null,
+            mode: null,
             count: "exhaustive",
             selectedChapters: []
         };
@@ -2861,6 +2861,15 @@
         }
 
         async function startSession() {
+            if (!currentSubject) {
+                alert("कृपया प्रथम विषय निवडा! (Please select a subject first)");
+                return;
+            }
+            if (!sessionConfig.mode) {
+                alert("कृपया सराव पद्धती निवडा! (Please select an engagement mode)");
+                return;
+            }
+            
             const key = document.getElementById("apiKey").value.trim();
             if (key) localStorage.setItem("gemini_api_key", key);
 
@@ -3270,7 +3279,8 @@ ${c.content}
         }
 
         window.addEventListener("DOMContentLoaded", () => {
-            renderSubjectChapters();
+            document.getElementById("chapterListContainer").innerHTML = `<div style="padding: 20px; text-align: center; color: #666; font-size: 1.1rem; width: 100%;">👆 कृपया प्रथम विषय निवडा. (Please select a subject first)</div>`;
+            
             const savedKey = localStorage.getItem("gemini_api_key");
             if (savedKey) {
                 document.getElementById("apiKey").value = savedKey;
