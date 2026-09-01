@@ -2783,7 +2783,7 @@
                 const label = document.createElement("label");
                 label.className = "chapter-item";
                 label.dataset.part = ch.part;
-                const isChecked = (ch.part === 1 || idx < 6) ? "checked" : "";
+                const isChecked = "";
                 label.innerHTML = `
                     <input type="checkbox" value="${ch.id}" ${isChecked}>
                     <span>${ch.title}</span>
@@ -3056,9 +3056,7 @@ Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
                 for (let i = 0; i < selectedChapterObjects.length; i++) {
                     const c = selectedChapterObjects[i];
                     document.getElementById("loadingStatusText").textContent = `सखोल परीक्षण: '${c.title}' मधील प्रश्न तयार करत आहे (${i+1}/${selectedChapterObjects.length})...`;
-                    const chunkText = `=== धडा/घटक: ${c.title} ===
-${c.content}
-=== समाप्त ===`;
+                    const chunkText = `=== धडा/घटक: ${c.title} ===\n${c.content}\n=== समाप्त ===`;
                     const prompt = buildPrompt(chunkText, 1);
                     try {
                         const parsed = await fetchQuestions(model, apiKey, prompt);
@@ -3071,9 +3069,7 @@ ${c.content}
                 // Standard single-shot generation
                 const selectedSourceText = selectedChapterObjects.map(c => `=== धडा/घटक: ${c.title} ===
 ${c.content}
-=== समाप्त ===`).join("
-
-");
+=== समाप्त ===`).join("\n\n");
                 const prompt = buildPrompt(selectedSourceText, selectedChapterObjects.length);
                 allParsedQuestions = await fetchQuestions(model, apiKey, prompt);
             }
