@@ -3,6 +3,10 @@
 > **Transforming Homework Battles into Innovation Labs.**  
 > An open-source ecosystem of **LLM-ready regional curriculum assets, NEP/NCF-aligned pedagogical frameworks, and interactive HTML5 AI games** that turn everyday study resistance into joyful, multi-modal learning adventures for kids, parents, and teachers.
 
+## 💡 Try it here
+
+https://parthlawate.github.io/learnwithai/
+
 ---
 
 ## 💡 The Origin: When 9:30 PM Homework Resistance Became an Innovation Lab
