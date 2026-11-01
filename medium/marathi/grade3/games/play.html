@@ -639,10 +639,10 @@
                 <div class="header-logo">🦁</div>
                 <div class="header-title">
                     <h1>अभ्यास बिभ्यास</h1>
-                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.7 (स्थानिक प्रश्न बँक + २५ EVS पाठ)</span></p>
+                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.8 (अतिजलद Gemini 2.5 Flash + बँक)</span></p>
                 </div>
             </div>
-            <div class="header-badge">NEP 2020 & NCF Aligned • v2.7</div>
+            <div class="header-badge">NEP 2020 & NCF Aligned • v2.8</div>
         </header>
 
         <!-- SCREEN 1: SETUP DASHBOARD -->
@@ -740,11 +740,10 @@
                     <div class="form-group">
                         <label for="aiModel">🤖 AI मॉडेल</label>
                         <select id="aiModel" class="form-control">
-                            <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (नवीनतम व अतिवेगवान - Recommended)</option>
-                            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (अतिजलद व उच्च क्षमता - High Quota)</option>
-                            <option value="gemini-3.6-flash">Gemini 3.6 Flash (संतुलित - Balanced)</option>
-                            <option value="gemini-2.5-flash">Gemini 2.5 Flash (स्थिर - Stable)</option>
-                            <option value="gemini-2.5-pro">Gemini 2.5 Pro (सखोल विश्लेषण - Deep Reasoning)</option>
+                            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (अतिजलद व स्थिर - Recommended)</option>
+                            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (उच्च क्षमता व गतिमान)</option>
+                            <option value="gemini-3.8-flash">Gemini 3.8 Flash (सखोल विचार मॉडेल)</option>
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro (प्रगत विश्लेषण)</option>
                         </select>
                     </div>
                 </div>
@@ -3281,23 +3280,50 @@
                 async function callSingleGeminiApi(model, apiKey, prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             
-            // Build generationConfig: gemini-3.5-flash-lite does not support custom temperature
+            // Build generationConfig tailored for speed and JSON output
             const generationConfig = {
                 responseMimeType: "application/json",
                 maxOutputTokens: 8192
             };
-            if (!model.includes("3.5-flash-lite")) {
+
+            // Set low/minimal thinking or temperature based on model
+            if (model.includes("3.8")) {
+                generationConfig.thinkingConfig = { thinkingLevel: "low" };
+            } else if (model.includes("3.5-flash-lite")) {
+                generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
+            } else if (model.includes("2.5-flash")) {
+                // thinkingBudget: 0 disables thinking for instant 1-2s response
+                generationConfig.thinkingConfig = { thinkingBudget: 0 };
+                generationConfig.temperature = 0.2;
+            } else {
                 generationConfig.temperature = 0.2;
             }
 
-            const res = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: generationConfig
-                })
-            });
+            // Abort after 20 seconds so we never hang indefinitely
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+            let res;
+            try {
+                res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: generationConfig
+                    }),
+                    signal: controller.signal
+                });
+            } catch (netErr) {
+                clearTimeout(timeoutId);
+                if (netErr.name === "AbortError") {
+                    const err = new Error(`मॉडेल प्रतिसाद वेळ संपली (Timeout after 20s)`);
+                    err.isTimeout = true;
+                    throw err;
+                }
+                throw netErr;
+            }
+            clearTimeout(timeoutId);
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
@@ -3308,21 +3334,55 @@
             }
 
             const data = await res.json();
-            let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!text) throw new Error("Gemini AI कडून रिक्त उत्तर मिळाले.");
+            const candidate = data.candidates?.[0];
+            if (!candidate) throw new Error("Gemini AI कडून उत्तर प्राप्त झाले नाही.");
 
-            text = text.replace(/```json/gi, "").replace(/```/g, "").trim();
-            const parsed = JSON.parse(text);
+            const parts = candidate.content?.parts || [];
+            if (parts.length === 0) throw new Error("Gemini AI कडून रिक्त उत्तर मिळाले.");
+
+            // Extract the actual JSON answer, skipping any thought parts
+            let text = "";
+            for (let p = parts.length - 1; p >= 0; p--) {
+                const part = parts[p];
+                if (!part.thought && part.text && part.text.trim().length > 0) {
+                    text = part.text.trim();
+                    break;
+                }
+            }
+            if (!text) {
+                text = parts[parts.length - 1].text?.trim() || "";
+            }
+
+            // Clean markdown code fence if wrapped in ```json
+            if (text.startsWith("```")) {
+                text = text.replace(/^```[a-zA-Z]*\n?/, "").replace(/```$/, "").trim();
+            }
+
+            // Extract the JSON array bounds
+            const firstBracket = text.indexOf("[");
+            const lastBracket = text.lastIndexOf("]");
+            if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+                text = text.substring(firstBracket, lastBracket + 1);
+            }
+
+            let parsed;
+            try {
+                parsed = JSON.parse(text);
+            } catch (parseErr) {
+                console.error("JSON parse error on response text:", text.slice(0, 300), parseErr);
+                throw new Error("AI उत्तराचे JSON मध्ये रूपांतर होऊ शकले नाही.");
+            }
+
             if (!Array.isArray(parsed) || parsed.length === 0) return [];
             return parsed;
         }
 
         async function fetchQuestions(preferredModel, apiKey, prompt) {
+            // Priority list: preferred model, then gemini-2.5-flash (fastest), then gemini-3.5-flash-lite
             const fallbackChain = [
                 preferredModel,
-                "gemini-3.5-flash-lite",
-                "gemini-3.8-flash",
-                "gemini-2.5-flash"
+                "gemini-2.5-flash",
+                "gemini-3.5-flash-lite"
             ];
             const modelsToTry = [...new Set(fallbackChain)];
 
@@ -3330,26 +3390,27 @@
 
             for (let mIdx = 0; mIdx < modelsToTry.length; mIdx++) {
                 const currentModel = modelsToTry[mIdx];
-                const maxRetries = 2; // Up to 2 retries per model
+                const maxRetries = 1; // 1 retry per model to prevent long stalls
 
                 for (let attempt = 0; attempt <= maxRetries; attempt++) {
                     try {
                         if (attempt > 0) {
-                            const waitTime = attempt * 1500;
                             const statusElem = document.getElementById("loadingStatusText");
                             if (statusElem) {
-                                statusElem.textContent = `मॉडेल व्यस्त आहे (${currentModel}), पुन्हा प्रयत्न करत आहे (प्रयत्न ${attempt + 1})...`;
+                                statusElem.textContent = `पुन्हा प्रयत्न करत आहे (${currentModel})...`;
                             }
-                            await new Promise(r => setTimeout(r, waitTime));
+                            await new Promise(r => setTimeout(r, 1000));
                         } else if (mIdx > 0) {
                             const statusElem = document.getElementById("loadingStatusText");
                             if (statusElem) {
-                                statusElem.textContent = `क्षमता मर्यादा: पर्यायी मॉडेल (${currentModel}) वापरत आहे...`;
+                                statusElem.textContent = `पर्यायी जलद मॉडेल वापरत आहे: ${currentModel}...`;
                             }
                         }
 
                         const result = await callSingleGeminiApi(currentModel, apiKey, prompt);
-                        return result;
+                        if (result && result.length > 0) {
+                            return result;
+                        }
                     } catch (err) {
                         lastError = err;
                         console.warn(`Model ${currentModel} attempt ${attempt + 1} failed:`, err.message);
@@ -3359,9 +3420,9 @@
                             throw err;
                         }
 
-                        // For 503 (High capacity / Overloaded) or 429 (Rate limit), continue loop to retry or switch model
-                        if (attempt === maxRetries) {
-                            console.warn(`Switching from ${currentModel} to next model in fallback chain.`);
+                        // If timeout or unparseable JSON, skip immediately to next model
+                        if (err.isTimeout || err.message.includes("JSON")) {
+                            break;
                         }
                     }
                 }
