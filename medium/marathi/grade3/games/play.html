@@ -639,10 +639,10 @@
                 <div class="header-logo">🦁</div>
                 <div class="header-title">
                     <h1>अभ्यास बिभ्यास</h1>
-                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; font-weight:600;">v2.5 (२५/२५ EVS पाठ उपलब्ध)</span></p>
+                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.6 (सर्व २५ EVS पाठ डिजिटाईज्ड)</span></p>
                 </div>
             </div>
-            <div class="header-badge">NEP 2020 & NCF Aligned</div>
+            <div class="header-badge">NEP 2020 & NCF Aligned • v2.6</div>
         </header>
 
         <!-- SCREEN 1: SETUP DASHBOARD -->
@@ -677,7 +677,7 @@
                         <div class="subject-card-icon">🌍</div>
                         <div class="subject-card-info">
                             <strong>परिसर अभ्यास (EVS)</strong>
-                            <span>विज्ञान, भूगोल, आणि इतिहास</span>
+                            <span>२५ पाठ (भाग १ व २) - १००% उपलब्ध</span>
                         </div>
                     </div>
                 </div>
@@ -740,10 +740,11 @@
                     <div class="form-group">
                         <label for="aiModel">🤖 AI मॉडेल</label>
                         <select id="aiModel" class="form-control">
-                            <option value="gemini-3.6-flash" selected>Gemini 3.6 Flash (नवीनतम व वेगवान)</option>
-                            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
-                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                            <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (नवीनतम व अतिवेगवान - Recommended)</option>
+                            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (अतिजलद व उच्च क्षमता - High Quota)</option>
+                            <option value="gemini-3.6-flash">Gemini 3.6 Flash (संतुलित - Balanced)</option>
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash (स्थिर - Stable)</option>
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro (सखोल विश्लेषण - Deep Reasoning)</option>
                         </select>
                     </div>
                 </div>
@@ -2829,30 +2830,45 @@
                 return;
             }
 
-            statusDiv.textContent = "⏳ तपासत आहे...";
+            statusDiv.textContent = "⏳ API Key तपासत आहे...";
             statusDiv.style.color = "#2563eb";
 
-            try {
-                const model = document.getElementById("aiModel").value;
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-                const res = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
-                });
+            const selectedModel = document.getElementById("aiModel").value;
+            const modelsToTest = [...new Set([selectedModel, "gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"])];
 
-                if (!res.ok) {
-                    const errData = await res.json().catch(() => ({}));
-                    const errMsg = errData?.error?.message || `HTTP ${res.status}`;
-                    statusDiv.textContent = `❌ त्रुटी: ${errMsg}`;
-                    statusDiv.style.color = "#dc2626";
-                } else {
-                    localStorage.setItem("gemini_api_key", key);
-                    statusDiv.textContent = `✅ API Key वैध आहे आणि Gemini AI (${model}) कनेक्ट झाले!`;
-                    statusDiv.style.color = "#16a34a";
+            let testedOkModel = null;
+            let lastErrMsg = "";
+
+            for (const model of modelsToTest) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                    const res = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
+                    });
+
+                    if (res.ok) {
+                        testedOkModel = model;
+                        break;
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        lastErrMsg = errData?.error?.message || `HTTP ${res.status}`;
+                        if (lastErrMsg.includes("API_KEY_INVALID") || (res.status === 400 && lastErrMsg.toLowerCase().includes("key"))) {
+                            break;
+                        }
+                    }
+                } catch(e) {
+                    lastErrMsg = e.message;
                 }
-            } catch(e) {
-                statusDiv.textContent = `❌ त्रुटी: ${e.message}`;
+            }
+
+            if (testedOkModel) {
+                localStorage.setItem("gemini_api_key", key);
+                statusDiv.textContent = `✅ API Key वैध आहे आणि Gemini AI (${testedOkModel}) कनेक्ट झाले!`;
+                statusDiv.style.color = "#16a34a";
+            } else {
+                statusDiv.textContent = `❌ त्रुटी: ${lastErrMsg}`;
                 statusDiv.style.color = "#dc2626";
             }
         }
@@ -2935,25 +2951,33 @@
             renderCurrentQuestion();
         }
 
-                async function fetchQuestions(model, apiKey, prompt) {
+                async function callSingleGeminiApi(model, apiKey, prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            
+            // Build generationConfig: gemini-3.5-flash-lite does not support custom temperature
+            const generationConfig = {
+                responseMimeType: "application/json",
+                maxOutputTokens: 8192
+            };
+            if (!model.includes("3.5-flash-lite")) {
+                generationConfig.temperature = 0.2;
+            }
+
             const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        maxOutputTokens: 8192,
-                        temperature: 0.2
-                    }
+                    generationConfig: generationConfig
                 })
             });
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
                 const msg = errData?.error?.message || `HTTP ${res.status}`;
-                throw new Error(msg);
+                const err = new Error(msg);
+                err.status = res.status;
+                throw err;
             }
 
             const data = await res.json();
@@ -2964,6 +2988,59 @@
             const parsed = JSON.parse(text);
             if (!Array.isArray(parsed) || parsed.length === 0) return [];
             return parsed;
+        }
+
+        async function fetchQuestions(preferredModel, apiKey, prompt) {
+            const fallbackChain = [
+                preferredModel,
+                "gemini-3.5-flash-lite",
+                "gemini-3.8-flash",
+                "gemini-2.5-flash"
+            ];
+            const modelsToTry = [...new Set(fallbackChain)];
+
+            let lastError = null;
+
+            for (let mIdx = 0; mIdx < modelsToTry.length; mIdx++) {
+                const currentModel = modelsToTry[mIdx];
+                const maxRetries = 2; // Up to 2 retries per model
+
+                for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                    try {
+                        if (attempt > 0) {
+                            const waitTime = attempt * 1500;
+                            const statusElem = document.getElementById("loadingStatusText");
+                            if (statusElem) {
+                                statusElem.textContent = `मॉडेल व्यस्त आहे (${currentModel}), पुन्हा प्रयत्न करत आहे (प्रयत्न ${attempt + 1})...`;
+                            }
+                            await new Promise(r => setTimeout(r, waitTime));
+                        } else if (mIdx > 0) {
+                            const statusElem = document.getElementById("loadingStatusText");
+                            if (statusElem) {
+                                statusElem.textContent = `क्षमता मर्यादा: पर्यायी मॉडेल (${currentModel}) वापरत आहे...`;
+                            }
+                        }
+
+                        const result = await callSingleGeminiApi(currentModel, apiKey, prompt);
+                        return result;
+                    } catch (err) {
+                        lastError = err;
+                        console.warn(`Model ${currentModel} attempt ${attempt + 1} failed:`, err.message);
+
+                        // If invalid API key (400/401/403 with API_KEY_INVALID), stop immediately
+                        if (err.status === 400 || err.status === 401 || err.status === 403) {
+                            throw err;
+                        }
+
+                        // For 503 (High capacity / Overloaded) or 429 (Rate limit), continue loop to retry or switch model
+                        if (attempt === maxRetries) {
+                            console.warn(`Switching from ${currentModel} to next model in fallback chain.`);
+                        }
+                    }
+                }
+            }
+
+            throw lastError || new Error("सर्व AI मॉडेल्स सध्या व्यस्त आहेत (High Capacity). कृपया थोड्या वेळाने प्रयत्न करा.");
         }
 
         async function generateWithGemini(apiKey) {
@@ -3107,6 +3184,10 @@ Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
                         allParsedQuestions = allParsedQuestions.concat(parsed);
                     } catch(e) {
                         console.warn("Failed chunk", c.title, e);
+                    }
+                    // Gentle pause between chapter chunk queries to respect rate limits
+                    if (i < selectedChapterObjects.length - 1) {
+                        await new Promise(r => setTimeout(r, 600));
                     }
                 }
             } else {
