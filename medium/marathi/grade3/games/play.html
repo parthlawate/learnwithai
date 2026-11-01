@@ -639,10 +639,10 @@
                 <div class="header-logo">🦁</div>
                 <div class="header-title">
                     <h1>अभ्यास बिभ्यास</h1>
-                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.9 (सखोल परीक्षा: नॉन-डुप्लिकेट व स्वतंत्र कव्हरेज)</span></p>
+                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.9.1 (टाइमआउट व पॅरामीटर फिक्स)</span></p>
                 </div>
             </div>
-            <div class="header-badge">NEP 2020 & NCF Aligned • v2.9</div>
+            <div class="header-badge">NEP 2020 & NCF Aligned • v2.9.1</div>
         </header>
 
         <!-- SCREEN 1: SETUP DASHBOARD -->
@@ -3024,7 +3024,7 @@
             }
 
             function getNormalizedText(str) {
-                return (str || "").toLowerCase()
+                return String(str || "").toLowerCase()
                     .replace(/[.,?!:;'"(){}\[\]\\/_-]/g, "")
                     .replace(/\s+/g, " ")
                     .trim();
@@ -3390,28 +3390,20 @@
                 async function callSingleGeminiApi(model, apiKey, prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             
-            // Build generationConfig tailored for speed and JSON output
+            // Standard generationConfig for structured JSON output
             const generationConfig = {
                 responseMimeType: "application/json",
                 maxOutputTokens: 8192
             };
 
-            // Set low/minimal thinking or temperature based on model
-            if (model.includes("3.8")) {
-                generationConfig.thinkingConfig = { thinkingLevel: "low" };
-            } else if (model.includes("3.5-flash-lite")) {
-                generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
-            } else if (model.includes("2.5-flash")) {
-                // thinkingBudget: 0 disables thinking for instant 1-2s response
-                generationConfig.thinkingConfig = { thinkingBudget: 0 };
-                generationConfig.temperature = 0.2;
-            } else {
+            // Custom temperature is supported on 2.5 and 3.8, but not on 3.5-flash-lite
+            if (!model.includes("3.5-flash-lite")) {
                 generationConfig.temperature = 0.2;
             }
 
-            // Abort after 20 seconds so we never hang indefinitely
+            // Abort after 90 seconds so we give large multi-question generations enough time
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 20000);
+            const timeoutId = setTimeout(() => controller.abort(), 90000);
 
             let res;
             try {
@@ -3427,7 +3419,7 @@
             } catch (netErr) {
                 clearTimeout(timeoutId);
                 if (netErr.name === "AbortError") {
-                    const err = new Error(`मॉडेल प्रतिसाद वेळ संपली (Timeout after 20s)`);
+                    const err = new Error(`मॉडेल प्रतिसाद वेळ संपली (Timeout after 90s)`);
                     err.isTimeout = true;
                     throw err;
                 }
@@ -3500,7 +3492,7 @@
 
             for (let mIdx = 0; mIdx < modelsToTry.length; mIdx++) {
                 const currentModel = modelsToTry[mIdx];
-                const maxRetries = 1; // 1 retry per model to prevent long stalls
+                const maxRetries = 1; // 1 retry per model
 
                 for (let attempt = 0; attempt <= maxRetries; attempt++) {
                     try {
@@ -3525,13 +3517,16 @@
                         lastError = err;
                         console.warn(`Model ${currentModel} attempt ${attempt + 1} failed:`, err.message);
 
-                        // If invalid API key (400/401/403 with API_KEY_INVALID), stop immediately
-                        if (err.status === 400 || err.status === 401 || err.status === 403) {
+                        // If invalid API key, stop immediately
+                        if (err.status === 400 && (err.message.includes("API_KEY_INVALID") || err.message.toLowerCase().includes("key"))) {
+                            throw err;
+                        }
+                        if (err.status === 401 || err.status === 403) {
                             throw err;
                         }
 
                         // If timeout or unparseable JSON, skip immediately to next model
-                        if (err.isTimeout || err.message.includes("JSON")) {
+                        if (err.isTimeout) {
                             break;
                         }
                     }
@@ -3685,6 +3680,7 @@ Return a JSON array of objects. Each object must have:
 Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
 
             let allParsedQuestions = [];
+            let lastGenError = null;
             
             // In exam_prep mode (or exhaustive mode), process EACH chapter individually to guarantee 100% balanced, deep coverage!
             if (sessionConfig.mode === "exam_prep" || sessionConfig.count === "exhaustive") {
@@ -3711,6 +3707,12 @@ Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
                         }
                     } catch(e) {
                         console.warn("Failed chunk", c.title, e);
+                        lastGenError = e;
+                        // Seamless backup: if this chunk failed from AI, retrieve cached questions from local bank for this chapter
+                        const bankBackup = getRandomQuestionsFromBank(currentSubject, [c.id], 5);
+                        if (bankBackup && bankBackup.length > 0) {
+                            allParsedQuestions = allParsedQuestions.concat(bankBackup);
+                        }
                     }
 
                     // Gentle pause between chapter chunk queries to respect rate limits
@@ -3724,13 +3726,20 @@ Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
 ${c.content}
 === समाप्त ===`).join("\n\n");
                 const prompt = buildPrompt(selectedSourceText, selectedChapterObjects.length, expectedCountText);
-                allParsedQuestions = await fetchQuestions(model, apiKey, prompt);
+                try {
+                    allParsedQuestions = await fetchQuestions(model, apiKey, prompt);
+                } catch(e) {
+                    lastGenError = e;
+                }
             }
 
             // Global deduplication and fact-diversity pass
             allParsedQuestions = deduplicateAndDiversifyQuestions(allParsedQuestions);
 
-            if (allParsedQuestions.length === 0) throw new Error("AI ने शून्य प्रश्न तयार केले.");
+            if (allParsedQuestions.length === 0) {
+                const errMsg = lastGenError ? lastGenError.message : "AI ने शून्य प्रश्न तयार केले.";
+                throw new Error(errMsg);
+            }
             
             allParsedQuestions.forEach(q => q._isAI = true);
             return allParsedQuestions;
