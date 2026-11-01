@@ -639,10 +639,10 @@
                 <div class="header-logo">🦁</div>
                 <div class="header-title">
                     <h1>अभ्यास बिभ्यास</h1>
-                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.8 (अतिजलद Gemini 2.5 Flash + बँक)</span></p>
+                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.9 (सखोल परीक्षा: नॉन-डुप्लिकेट व स्वतंत्र कव्हरेज)</span></p>
                 </div>
             </div>
-            <div class="header-badge">NEP 2020 & NCF Aligned • v2.8</div>
+            <div class="header-badge">NEP 2020 & NCF Aligned • v2.9</div>
         </header>
 
         <!-- SCREEN 1: SETUP DASHBOARD -->
@@ -3009,6 +3009,113 @@
             }
         }
 
+        // ==========================================
+        // DEDUPLICATION & FACT-DIVERSITY FILTER
+        // ==========================================
+        function deduplicateAndDiversifyQuestions(questions) {
+            if (!Array.isArray(questions) || questions.length <= 1) return questions || [];
+
+            const seenQuestions = new Set();
+            const seenAnswersByChapter = new Map();
+            const filtered = [];
+
+            function stemWord(w) {
+                return w.length > 4 ? w.slice(0, 4) : w;
+            }
+
+            function getNormalizedText(str) {
+                return (str || "").toLowerCase()
+                    .replace(/[.,?!:;'"(){}\[\]\\/_-]/g, "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+            }
+
+            const stopWords = new Set([
+                "काय", "कोण", "केव्हा", "कुठे", "कसे", "का", "आहे", "आहेत", "होते", "होती", "नाही", "करा", "सांगा", 
+                "कोणते", "कोणता", "कोणती", "या", "त्या", "हे", "ती", "ते", "व", "आणि", "किंवा", "जर", "तर", "मधील",
+                "what", "which", "who", "where", "how", "why", "is", "are", "the", "a", "an", "and", "or", "in", "of"
+            ]);
+
+            function getKeywords(str) {
+                return getNormalizedText(str)
+                    .split(" ")
+                    .filter(w => w.length >= 2 && !stopWords.has(w))
+                    .map(stemWord);
+            }
+
+            for (const q of questions) {
+                if (!q || !q.question) continue;
+                const normQ = getNormalizedText(q.question);
+                if (!normQ) continue;
+
+                // 1. Exact match deduplication
+                if (seenQuestions.has(normQ)) {
+                    continue;
+                }
+
+                const chKey = q.chapterTitle || q.chapterId || "default";
+                const qKeywords = getKeywords(normQ);
+
+                let isRedundantFact = false;
+
+                // 2. Same answer + stem overlap in same chapter
+                if (q.type === "mcq" && q.answer) {
+                    const normAns = getNormalizedText(q.answer);
+                    if (!seenAnswersByChapter.has(chKey)) {
+                        seenAnswersByChapter.set(chKey, []);
+                    }
+                    const existingForCh = seenAnswersByChapter.get(chKey);
+
+                    for (const prev of existingForCh) {
+                        if (prev.answer === normAns) {
+                            const common = qKeywords.filter(k => prev.keywords.includes(k));
+                            const similarity = common.length / Math.max(1, Math.min(qKeywords.length, prev.keywords.length));
+                            if (similarity >= 0.35) {
+                                isRedundantFact = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (isRedundantFact) {
+                    continue;
+                }
+
+                // 3. High text similarity across same question type and chapter
+                let isTooSimilar = false;
+                for (const accepted of filtered) {
+                    if ((accepted.chapterTitle === q.chapterTitle || !q.chapterTitle) && accepted.type === q.type) {
+                        const accKeywords = getKeywords(accepted.question);
+                        if (qKeywords.length > 0 && accKeywords.length > 0) {
+                            const common = qKeywords.filter(k => accKeywords.includes(k));
+                            const overlapRatio = (2 * common.length) / (qKeywords.length + accKeywords.length);
+                            if (overlapRatio > 0.65) {
+                                isTooSimilar = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (isTooSimilar) {
+                    continue;
+                }
+
+                seenQuestions.add(normQ);
+                if (q.type === "mcq" && q.answer) {
+                    const normAns = getNormalizedText(q.answer);
+                    seenAnswersByChapter.get(chKey).push({
+                        answer: normAns,
+                        keywords: qKeywords
+                    });
+                }
+                filtered.push(q);
+            }
+
+            return filtered;
+        }
+
         function getRandomQuestionsFromBank(subject, chapterIds, limit, options = {}) {
             const stored = getStoredQuestionBank();
             const subjObj = ALL_SUBJECTS[subject];
@@ -3042,7 +3149,7 @@
                 q._isAI = false;
                 q._isBank = true;
             });
-            return chosen;
+            return deduplicateAndDiversifyQuestions(chosen);
         }
 
         function updateQuestionBankUI() {
@@ -3262,6 +3369,9 @@
                 }
             }
 
+            // Ensure non-duplication and fact diversity across all questions in the active session
+            currentSessionQuestions = deduplicateAndDiversifyQuestions(currentSessionQuestions);
+
             document.getElementById("loadingModal").classList.remove("active");
 
             if (!currentSessionQuestions || currentSessionQuestions.length === 0) {
@@ -3447,21 +3557,33 @@
 MODE: 🏆 EXHAUSTIVE EXAM PREPARATION (सखोल परीक्षा पूर्वतयारी)
 ====================================================================
 CRITICAL PEDAGOGICAL BLUEPRINT (NEP 2020 & NCF 2023 ALIGNED):
-Your goal is 100% EXHAUSTIVE, DEEP CURRICULUM COVERAGE for the provided chapters. 
-You must act as a rigorous curriculum evaluator. Systematically analyze EVERY section, story, poem, diagram, table, and exercise in the text.
-Extract deep, meaningful questions covering ALL assessable concepts without skipping anything.
+Your goal is 100% EXHAUSTIVE, DEEP, NON-DUPLICATIVE CURRICULUM COVERAGE for each provided chapter.
 
-GENERATE QUESTIONS ACROSS THESE 5 COGNITIVE LAYERS:
-- LAYER 1: FOUNDATIONAL KNOWLEDGE & RECALL (संकल्पना ज्ञान व आकलन)
-  Facts, definitions, identification of objects/roles/functions, directly from the text.
-- LAYER 2: PROCEDURAL & STRUCTURAL MASTERY (प्रक्रिया व नियम कौशल्य)
-  Rules, step-by-step processes (e.g., handwashing steps, road safety rules, grammar mechanics, mathematical operations).
-- LAYER 3: ANALYTICAL & RELATIONAL THINKING (विश्लेषण व सहसंबंध)
-  Cause and effect ('कारणे सांगा'), comparing and contrasting (e.g., nuclear vs joint family, clean vs polluted water), classification.
-- LAYER 4: APPLICATION & REAL-WORLD CONNECTION (उपयोजन व दैनंदिन जीवन)
-  Applying concepts to realistic situations an 8-year-old child faces at home, school, or on the road.
-- LAYER 5: HIGHER-ORDER CRITICAL INQUIRY (विचारप्रवर्तक व चिकित्सक विचार)
-  "काय घडेल जर...?", evaluating choices, ethical decisions (e.g., reporting unsafe touch, sorting wet and dry waste).`;
+🚨 MANDATORY ANTI-DUPLICATION & FACT-DIVERSITY RULES:
+1. 🚫 ZERO FACTUAL DUPLICATION (एकच माहिती वारंवार नको):
+   - For any single fact, rule, or concept, DO NOT generate multiple questions that test the same underlying knowledge.
+   - AGAINST EACH FACT: Unless two questions test MEANINGFULLY DIFFERENT cognitive dimensions, DO NOT have duplicates!
+     * ALLOWED MEANINGFUL DIFFERENCE: One question tests basic concept identification/definition, while another tests practical real-world application or cause-and-effect ("का व कसे?").
+     * STRICTLY PROHIBITED: Multiple questions asking the same fact with different words or asking for the same answer multiple times.
+2. 🎯 GUARANTEED COMPREHENSIVE CHAPTER COVERAGE (सर्व घटकांचे परिपूर्ण कव्हरेज):
+   - Systematically extract questions across the ENTIRE chapter from beginning to end:
+     * Section A: Basic concepts, definitions & scientific vocabulary
+     * Section B: Processes, steps, hygiene & daily habits
+     * Section C: Cause and effect, scientific reasoning & comparisons
+     * Section D: Real-life application scenarios an 8-year-old child faces
+     * Section E: Textbook exercise questions (स्वाध्याय)
+   - Do NOT cluster questions around only one part of the chapter. Spread questions evenly across all sections.
+3. 🧠 5-LAYER COGNITIVE MASTERY:
+   - LAYER 1: FOUNDATIONAL KNOWLEDGE & RECALL (संकल्पना ज्ञान व आकलन)
+     Facts, definitions, identification of objects/roles/functions, directly from the text.
+   - LAYER 2: PROCEDURAL & STRUCTURAL MASTERY (प्रक्रिया व नियम कौशल्य)
+     Rules, step-by-step processes (e.g., handwashing steps, road safety rules, grammar mechanics, mathematical operations).
+   - LAYER 3: ANALYTICAL & RELATIONAL THINKING (विश्लेषण व सहसंबंध)
+     Cause and effect ('कारणे सांगा'), comparing and contrasting (e.g., nuclear vs joint family, clean vs polluted water), classification.
+   - LAYER 4: APPLICATION & REAL-WORLD CONNECTION (उपयोजन व दैनंदिन जीवन)
+     Applying concepts to realistic situations an 8-year-old child faces at home, school, or on the road.
+   - LAYER 5: HIGHER-ORDER CRITICAL INQUIRY (विचारप्रवर्तक व चिकित्सक विचार)
+     "काय घडेल जर...?", evaluating choices, ethical decisions (e.g., reporting unsafe touch, sorting wet and dry waste).`;
             } else if (sessionConfig.mode === "homework") {
                 const hwTopic = document.getElementById("hwTopicInput").value.trim();
                 modeDirective = `
@@ -3526,7 +3648,7 @@ EVS (परिसर अभ्यास) NEP 2020 & NCF 2023 PEDAGOGICAL BLUEPRI
             }
             
             // Build the base prompt template
-            const buildPrompt = (sourceText, chapterCount) => `
+            const buildPrompt = (sourceText, chapterCount, specificTargetText = "") => `
 You are an expert AI teacher generating an interactive, rigorous educational evaluation for an 8-year-old Grade 3 student.
 
 STRICT MANDATORY RULES (DO NOT VIOLATE):
@@ -3536,10 +3658,14 @@ STRICT MANDATORY RULES (DO NOT VIOLATE):
    - NEVER ask for the meaning of the chapter's title words (e.g., "आरोग्यदायी शब्दाचा अर्थ काय?", "शीर्षकाचा अर्थ काय?").
    - NEVER ask about textbook formatting, author names, chapter numbers, or page numbers.
    - Questions MUST test the child's mastery of the ACTUAL SUBJECT KNOWLEDGE, scientific principles, social concepts, and problem-solving skills.
-3. ${modeDirective}
-4. ${langInstruction}
-5. ${expectedCountText} (For these ${chapterCount} chapter(s)).
-6. ${subjectSpecificOverrides}
+3. 🚫 FACT-LEVEL UNIQUENESS & ZERO REDUNDANCY (MANDATORY):
+   - Every single question must assess a COMPLETELY DISTINCT fact, concept, or learning objective.
+   - DO NOT generate duplicate questions against the same underlying fact unless they assess meaningfully different cognitive layers (e.g., one on direct recall and another on practical cause-and-effect reasoning).
+   - If generating MCQs, ensure no two questions have identical correct answers testing the same fact.
+4. ${modeDirective}
+5. ${langInstruction}
+6. ${specificTargetText || expectedCountText}
+7. ${subjectSpecificOverrides}
 
 SOURCE TEXT:
 ${sourceText}
@@ -3560,32 +3686,49 @@ Return ONLY the raw JSON array. Do NOT wrap in markdown code blocks.`;
 
             let allParsedQuestions = [];
             
-            // If exhaustive mode and multiple chapters, chunk them to force the LLM to generate deeply
-            if (sessionConfig.mode === "exam_prep" && sessionConfig.count === "exhaustive" && selectedChapterObjects.length > 1) {
+            // In exam_prep mode (or exhaustive mode), process EACH chapter individually to guarantee 100% balanced, deep coverage!
+            if (sessionConfig.mode === "exam_prep" || sessionConfig.count === "exhaustive") {
+                const perChapterTargetNote = (sessionConfig.count === "exhaustive")
+                    ? "EXHAUSTIVE MODE: Cover every single section, exercise, and concept thoroughly with zero duplicate facts."
+                    : `Generate EXACTLY ${Math.max(4, Math.ceil(parseInt(sessionConfig.count || 15) / selectedChapterObjects.length))} diverse, non-duplicate questions covering different sections of this chapter.`;
+
                 for (let i = 0; i < selectedChapterObjects.length; i++) {
                     const c = selectedChapterObjects[i];
-                    document.getElementById("loadingStatusText").textContent = `सखोल परीक्षण: '${c.title}' मधील प्रश्न तयार करत आहे (${i+1}/${selectedChapterObjects.length})...`;
+                    document.getElementById("loadingStatusText").textContent = `सखोल परीक्षा: '${c.title}' चे परिपूर्ण कव्हरेज तयार करत आहे (${i+1}/${selectedChapterObjects.length})...`;
                     const chunkText = `=== धडा/घटक: ${c.title} ===\n${c.content}\n=== समाप्त ===`;
-                    const prompt = buildPrompt(chunkText, 1);
+                    const prompt = buildPrompt(chunkText, 1, `CHAPTER FOCUS: '${c.title}'. ${perChapterTargetNote}`);
+                    
                     try {
                         const parsed = await fetchQuestions(model, apiKey, prompt);
-                        allParsedQuestions = allParsedQuestions.concat(parsed);
+                        if (parsed && parsed.length > 0) {
+                            parsed.forEach(q => {
+                                q.chapterTitle = c.title;
+                                q.chapterId = c.id;
+                            });
+                            // De-duplicate immediately within this chapter
+                            const cleanParsed = deduplicateAndDiversifyQuestions(parsed);
+                            allParsedQuestions = allParsedQuestions.concat(cleanParsed);
+                        }
                     } catch(e) {
                         console.warn("Failed chunk", c.title, e);
                     }
+
                     // Gentle pause between chapter chunk queries to respect rate limits
                     if (i < selectedChapterObjects.length - 1) {
-                        await new Promise(r => setTimeout(r, 600));
+                        await new Promise(r => setTimeout(r, 400));
                     }
                 }
             } else {
-                // Standard single-shot generation
+                // Standard single-shot generation for other modes (homework, fun play, etc.)
                 const selectedSourceText = selectedChapterObjects.map(c => `=== धडा/घटक: ${c.title} ===
 ${c.content}
 === समाप्त ===`).join("\n\n");
-                const prompt = buildPrompt(selectedSourceText, selectedChapterObjects.length);
+                const prompt = buildPrompt(selectedSourceText, selectedChapterObjects.length, expectedCountText);
                 allParsedQuestions = await fetchQuestions(model, apiKey, prompt);
             }
+
+            // Global deduplication and fact-diversity pass
+            allParsedQuestions = deduplicateAndDiversifyQuestions(allParsedQuestions);
 
             if (allParsedQuestions.length === 0) throw new Error("AI ने शून्य प्रश्न तयार केले.");
             
