@@ -639,10 +639,10 @@
                 <div class="header-logo">🦁</div>
                 <div class="header-title">
                     <h1>अभ्यास बिभ्यास</h1>
-                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.6 (सर्व २५ EVS पाठ डिजिटाईज्ड)</span></p>
+                    <p>इयत्ता ३री AI परीक्षा, गृहपाठ व स्वयं-शिक्षण मंच • <span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-weight:700;">v2.7 (स्थानिक प्रश्न बँक + २५ EVS पाठ)</span></p>
                 </div>
             </div>
-            <div class="header-badge">NEP 2020 & NCF Aligned • v2.6</div>
+            <div class="header-badge">NEP 2020 & NCF Aligned • v2.7</div>
         </header>
 
         <!-- SCREEN 1: SETUP DASHBOARD -->
@@ -771,6 +771,47 @@
                             </label>
                         </div>
                     </div>
+                </div>
+
+                <!-- Local Question Bank Sub-card -->
+                <div style="margin-top: 16px; padding: 14px 16px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong style="color: #166534; font-size: 0.95rem;">💾 स्थानिक प्रश्न बँक (Client-side Question Bank)</strong>
+                                <span id="bankTotalBadge" style="font-size: 0.75rem; background: #bbf7d0; color: #14532d; padding: 2px 8px; border-radius: 10px; font-weight: 700;">० प्रश्न साठवले</span>
+                            </div>
+                            <p style="margin: 3px 0 0; font-size: 0.8rem; color: #15803d;">
+                                प्रत्येक AI जनरेशनमधील प्रश्न येथे आपोआप सुरक्षित साठवले जातात. जितका जास्त वापर, तितकी ऑफलाइन बँक समृद्ध!
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button type="button" class="btn-secondary" style="font-size: 0.75rem; padding: 4px 10px; background: #ffffff;" onclick="exportQuestionBank()">📥 बॅकअप (JSON)</button>
+                            <button type="button" class="btn-secondary" style="font-size: 0.75rem; padding: 4px 10px; background: #ffffff;" onclick="importQuestionBankPrompt()">📤 लोड करा</button>
+                            <button type="button" class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; background: #fee2e2; color: #b91c1c; border-color: #fca5a5;" onclick="clearQuestionBank()">🗑️ साफ करा</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #bbf7d0; display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: #166534;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" id="autoSaveToBank" checked>
+                            ✨ नवीन AI प्रश्न आपोआप साठवा (Auto-save)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" id="blendBankQuestions" checked>
+                            🎲 साठवलेल्या बँकेतूनही यादृच्छिक प्रश्न मिसळा (Blend Cached Questions)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #047857; font-weight: 600;">
+                            <input type="radio" name="playSource" id="sourceAI" value="ai" checked>
+                            🤖 AI + बँक मोड
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #047857; font-weight: 600;">
+                            <input type="radio" name="playSource" id="sourceBankOnly" value="bank">
+                            📂 फक्त स्थानिक बँक वापरा (No API Key)
+                        </label>
+                    </div>
+
+                    <div id="bankSubjectBreakdown" style="margin-top: 8px; font-size: 0.75rem; color: #15803d; display: flex; gap: 8px; flex-wrap: wrap;"></div>
                 </div>
             </div>
 
@@ -2740,6 +2781,7 @@
             currentSubject = subjKey;
             sessionConfig.subject = subjKey;
             renderSubjectChapters();
+            updateQuestionBankUI();
         }
 
         function setMode(elem, mode) {
@@ -2873,6 +2915,219 @@
             }
         }
 
+        // ==========================================
+        // CLIENT-SIDE LOCAL QUESTION BANK (CACHE)
+        // ==========================================
+        const QB_STORAGE_KEY = "abhyas_local_question_bank_v1";
+
+        function getStoredQuestionBank() {
+            try {
+                const raw = localStorage.getItem(QB_STORAGE_KEY);
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.error("Failed to read question bank from localStorage", e);
+                return [];
+            }
+        }
+
+        function saveStoredQuestionBank(bank) {
+            try {
+                localStorage.setItem(QB_STORAGE_KEY, JSON.stringify(bank));
+            } catch (e) {
+                console.warn("localStorage quota hit when saving question bank, trimming oldest entries...", e);
+                if (bank.length > 1000) {
+                    const trimmed = bank.slice(-1000);
+                    try {
+                        localStorage.setItem(QB_STORAGE_KEY, JSON.stringify(trimmed));
+                    } catch (e2) {
+                        console.error("Critical: Cannot write to localStorage", e2);
+                    }
+                }
+            }
+        }
+
+        function createQuestionFingerprint(q, subject) {
+            const subj = (q.subject || subject || currentSubject || "").toLowerCase().trim();
+            const text = (q.question || "").toLowerCase().replace(/[\s\p{P}]+/gu, "");
+            return `${subj}::${text}`;
+        }
+
+        function saveQuestionsToBank(questions, subject) {
+            if (!Array.isArray(questions) || questions.length === 0) return 0;
+            try {
+                const stored = getStoredQuestionBank();
+                const existingFingerprints = new Set(
+                    stored.map(q => createQuestionFingerprint(q, q.subject))
+                );
+
+                let addedCount = 0;
+                const subjObj = ALL_SUBJECTS[subject || currentSubject];
+
+                questions.forEach(q => {
+                    const fp = createQuestionFingerprint(q, subject);
+                    if (!existingFingerprints.has(fp)) {
+                        existingFingerprints.add(fp);
+
+                        let matchedChapterId = q.chapterId;
+                        if (!matchedChapterId && subjObj && q.chapterTitle) {
+                            const found = Object.values(subjObj.chapters).find(c => 
+                                c.title === q.chapterTitle || 
+                                q.chapterTitle.includes(c.title) || 
+                                c.title.includes(q.chapterTitle)
+                            );
+                            if (found) matchedChapterId = found.id;
+                        }
+
+                        stored.push({
+                            id: "qb_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+                            subject: subject || currentSubject,
+                            chapterId: matchedChapterId || null,
+                            chapterTitle: q.chapterTitle || "",
+                            category: q.category || "सराव",
+                            type: q.type || (q.options && q.options.length ? "mcq" : "oral"),
+                            question: q.question,
+                            options: q.options || [],
+                            answer: q.answer || "",
+                            explanation: q.explanation || "",
+                            modelAnswer: q.modelAnswer || "",
+                            rubric: q.rubric || "",
+                            createdAt: Date.now()
+                        });
+                        addedCount++;
+                    }
+                });
+
+                if (addedCount > 0) {
+                    saveStoredQuestionBank(stored);
+                    updateQuestionBankUI();
+                }
+                return addedCount;
+            } catch (e) {
+                console.warn("Error saving questions to bank", e);
+                return 0;
+            }
+        }
+
+        function getRandomQuestionsFromBank(subject, chapterIds, limit, options = {}) {
+            const stored = getStoredQuestionBank();
+            const subjObj = ALL_SUBJECTS[subject];
+
+            let eligible = stored.filter(q => {
+                if (q.subject !== subject) return false;
+                if (chapterIds && chapterIds.length > 0) {
+                    if (q.chapterId && chapterIds.includes(q.chapterId)) return true;
+                    if (q.chapterTitle && subjObj) {
+                        const matchCh = Object.values(subjObj.chapters).find(c => 
+                            chapterIds.includes(c.id) && (c.title === q.chapterTitle || q.chapterTitle.includes(c.title) || c.title.includes(q.chapterTitle))
+                        );
+                        if (matchCh) return true;
+                    }
+                    return false;
+                }
+                return true;
+            });
+
+            if (options.onlyMCQ) eligible = eligible.filter(q => q.type === "mcq");
+            if (options.onlyOral) eligible = eligible.filter(q => q.type === "oral");
+
+            // Fisher-Yates shuffle
+            for (let i = eligible.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [eligible[i], eligible[j]] = [eligible[j], eligible[i]];
+            }
+
+            const chosen = (limit && limit > 0 && eligible.length > limit) ? eligible.slice(0, limit) : eligible;
+            chosen.forEach(q => {
+                q._isAI = false;
+                q._isBank = true;
+            });
+            return chosen;
+        }
+
+        function updateQuestionBankUI() {
+            if (typeof document === "undefined") return;
+            const stored = getStoredQuestionBank();
+            const badge = document.getElementById("bankTotalBadge");
+            const breakdown = document.getElementById("bankSubjectBreakdown");
+            if (!badge || !breakdown) return;
+
+            badge.textContent = `${stored.length} प्रश्न साठवले`;
+
+            const counts = { marathi: 0, english: 0, mathematics: 0, evs: 0 };
+            stored.forEach(q => {
+                if (counts[q.subject] !== undefined) counts[q.subject]++;
+            });
+
+            breakdown.innerHTML = `
+                <span>📙 मराठी: <strong>${counts.marathi}</strong></span>
+                <span>•</span>
+                <span>📘 English: <strong>${counts.english}</strong></span>
+                <span>•</span>
+                <span>📐 गणित: <strong>${counts.mathematics}</strong></span>
+                <span>•</span>
+                <span>🌍 EVS: <strong>${counts.evs}</strong></span>
+            `;
+        }
+
+        function exportQuestionBank() {
+            const stored = getStoredQuestionBank();
+            if (stored.length === 0) {
+                alert("स्थानिक प्रश्न बँकेत सध्या कोणताही प्रश्न साठवलेला नाही.");
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(stored, null, 2));
+            const downloadAnchor = document.createElement("a");
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `abhyas_question_bank_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importQuestionBankPrompt() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".json";
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        if (!Array.isArray(parsed)) throw new Error("JSON मध्ये प्रश्नांची यादी (Array) असणे आवश्यक आहे.");
+                        let imported = 0;
+                        parsed.forEach(q => {
+                            if (q.question && q.subject) {
+                                imported += saveQuestionsToBank([q], q.subject);
+                            }
+                        });
+                        alert(`🎉 यशस्वी! ${imported} नवीन प्रश्न स्थानिक बँकेत जोडले गेले.`);
+                        updateQuestionBankUI();
+                    } catch (err) {
+                        alert("फाइल लोड करताना त्रुटी: " + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function clearQuestionBank() {
+            const count = getStoredQuestionBank().length;
+            if (count === 0) {
+                alert("स्थानिक बँक आधीच रिकामी आहे.");
+                return;
+            }
+            if (confirm(`⚠️ तुम्ही स्थानिक प्रश्न बँकेतील सर्व ${count} प्रश्न हटवू इच्छिता का?`)) {
+                localStorage.removeItem(QB_STORAGE_KEY);
+                updateQuestionBankUI();
+                alert("स्थानिक प्रश्न बँक यशस्वीरीत्या साफ केली गेली.");
+            }
+        }
+
         function speakCurrentQuestion() {
             if (!("speechSynthesis" in window)) return;
             const q = currentSessionQuestions[currentIndex];
@@ -2915,25 +3170,97 @@
                 return;
             }
 
-            document.getElementById("loadingModal").classList.add("active");
-            document.getElementById("loadingStatusText").textContent = `${subj.title} - निवडलेल्या घटकांवर आधारित प्रश्न तयार केले जात आहेत...`;
+            const playSource = document.querySelector('input[name="playSource"]:checked')?.value || "ai";
+            const autoSave = document.getElementById("autoSaveToBank")?.checked ?? true;
+            const blendBank = document.getElementById("blendBankQuestions")?.checked ?? true;
 
-            if (key) {
+            const targetCount = (sessionConfig.count === "exhaustive") ? 0 : 
+                               (sessionConfig.count === "auto" ? 15 : parseInt(sessionConfig.count));
+
+            const onlyMCQ = document.getElementById("typeMCQ")?.checked && !document.getElementById("typeOral")?.checked;
+            const onlyOral = !document.getElementById("typeMCQ")?.checked && document.getElementById("typeOral")?.checked;
+
+            document.getElementById("loadingModal").classList.add("active");
+
+            // Mode A: Play strictly from Local Question Bank (or if no API key provided)
+            if (playSource === "bank" || !key) {
+                document.getElementById("loadingStatusText").textContent = `स्थानिक प्रश्न बँकेतून निवडक प्रश्न लोड करत आहे...`;
+                await new Promise(r => setTimeout(r, 400));
+
+                const bankQuestions = getRandomQuestionsFromBank(currentSubject, sessionConfig.selectedChapters, targetCount, { onlyMCQ, onlyOral });
+                if (bankQuestions.length > 0) {
+                    if (targetCount > 0 && bankQuestions.length < targetCount) {
+                        const fallbacks = getStrictFilteredFallbackQuestions();
+                        const needed = targetCount - bankQuestions.length;
+                        currentSessionQuestions = bankQuestions.concat(fallbacks.slice(0, needed));
+                    } else {
+                        currentSessionQuestions = bankQuestions;
+                    }
+                } else {
+                    if (playSource === "bank") {
+                        alert("⚠️ निवडलेल्या घटकांसाठी स्थानिक बँकेत प्रश्न उपलब्ध नाहीत. प्रथम AI द्वारे प्रश्न तयार करून बँक तयार करा, किंवा पाठ्यपुस्तक मूळ बँक वापरली जाईल.");
+                    }
+                    currentSessionQuestions = getStrictFilteredFallbackQuestions();
+                }
+            } else {
+                // Mode B: Online Gemini AI Generation + Auto-save to Local Bank + Optional Blending
+                document.getElementById("loadingStatusText").textContent = `${subj.title} - निवडलेल्या घटकांवर आधारित प्रश्न तयार केले जात आहेत...`;
+
                 try {
-                    currentSessionQuestions = await generateWithGemini(key);
+                    const aiQuestions = await generateWithGemini(key);
+                    
+                    // Auto-save fresh questions into the local question bank
+                    if (autoSave && aiQuestions && aiQuestions.length > 0) {
+                        const added = saveQuestionsToBank(aiQuestions, currentSubject);
+                        console.log(`Saved ${added} fresh questions to local bank.`);
+                    }
+
+                    // If blending is requested and not in exhaustive mode, mix in cached questions
+                    if (blendBank && sessionConfig.mode !== "exam_prep" && targetCount > 0) {
+                        const blendTarget = Math.max(2, Math.floor(targetCount * 0.3));
+                        const bankMix = getRandomQuestionsFromBank(currentSubject, sessionConfig.selectedChapters, blendTarget, { onlyMCQ, onlyOral });
+                        
+                        const aiFingerprints = new Set(aiQuestions.map(q => createQuestionFingerprint(q, currentSubject)));
+                        const uniqueBankMix = bankMix.filter(q => !aiFingerprints.has(createQuestionFingerprint(q, currentSubject)));
+                        
+                        if (uniqueBankMix.length > 0) {
+                            currentSessionQuestions = aiQuestions.concat(uniqueBankMix);
+                            // Fisher-Yates shuffle
+                            for (let i = currentSessionQuestions.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [currentSessionQuestions[i], currentSessionQuestions[j]] = [currentSessionQuestions[j], currentSessionQuestions[i]];
+                            }
+                            if (targetCount > 0 && currentSessionQuestions.length > targetCount) {
+                                currentSessionQuestions = currentSessionQuestions.slice(0, targetCount);
+                            }
+                        } else {
+                            currentSessionQuestions = aiQuestions;
+                        }
+                    } else {
+                        currentSessionQuestions = aiQuestions;
+                    }
                 } catch(e) {
                     console.error("AI Generation Error:", e);
                     document.getElementById("loadingModal").classList.remove("active");
-                    const proceedFallback = confirm(`⚠️ Gemini AI द्वारे प्रश्न तयार करताना त्रुटी आली:\n"${e.message}"\n\nतुम्हाला ऑफलाइन पाठ्यपुस्तक प्रश्नसंचासह पुढे जायचे आहे का?`);
-                    if (proceedFallback) {
-                        currentSessionQuestions = getStrictFilteredFallbackQuestions();
+
+                    // Check local question bank first before falling back to static questions!
+                    const bankQuestions = getRandomQuestionsFromBank(currentSubject, sessionConfig.selectedChapters, targetCount, { onlyMCQ, onlyOral });
+                    if (bankQuestions.length > 0) {
+                        const proceedBank = confirm(`⚠️ Gemini AI द्वारे प्रश्न तयार करताना त्रुटी आली:\n"${e.message}"\n\nस्थानिक बँकेत ${bankQuestions.length} साठवलेले प्रश्न उपलब्ध आहेत! तुम्ही या साठवलेल्या प्रश्नांसह खेळ सुरू करू इच्छिता का?`);
+                        if (proceedBank) {
+                            currentSessionQuestions = bankQuestions;
+                        } else {
+                            return;
+                        }
                     } else {
-                        return;
+                        const proceedFallback = confirm(`⚠️ Gemini AI द्वारे प्रश्न तयार करताना त्रुटी आली:\n"${e.message}"\n\nतुम्हाला ऑफलाइन पाठ्यपुस्तक प्रश्नसंचासह पुढे जायचे आहे का?`);
+                        if (proceedFallback) {
+                            currentSessionQuestions = getStrictFilteredFallbackQuestions();
+                        } else {
+                            return;
+                        }
                     }
                 }
-            } else {
-                await new Promise(r => setTimeout(r, 600));
-                currentSessionQuestions = getStrictFilteredFallbackQuestions();
             }
 
             document.getElementById("loadingModal").classList.remove("active");
@@ -3260,11 +3587,15 @@ ${c.content}
 
             const sourceTag = document.getElementById("qSourceTag");
             if (q._isAI) {
-                sourceTag.textContent = "🤖 Gemini AI (Dynamic)";
+                sourceTag.textContent = "🤖 Gemini AI (नवीन प्रश्न)";
                 sourceTag.style.background = "#dcfce7";
                 sourceTag.style.color = "#15803d";
+            } else if (q._isBank) {
+                sourceTag.textContent = "💾 स्थानिक बँक (साठवलेला प्रश्न)";
+                sourceTag.style.background = "#e0e7ff";
+                sourceTag.style.color = "#3730a3";
             } else {
-                sourceTag.textContent = "📂 पाठ्यपुस्तक ऑफलाइन बँक";
+                sourceTag.textContent = "📂 पाठ्यपुस्तक मूळ बँक";
                 sourceTag.style.background = "#fef3c7";
                 sourceTag.style.color = "#92400e";
             }
@@ -3392,6 +3723,7 @@ ${c.content}
 
         function restartGame() {
             showScreen("setupScreen");
+            updateQuestionBankUI();
         }
 
         window.addEventListener("DOMContentLoaded", () => {
@@ -3403,6 +3735,8 @@ ${c.content}
                 document.getElementById("keyStatusMsg").textContent = "💾 साठवलेली API Key उपलब्ध आहे.";
                 document.getElementById("keyStatusMsg").style.color = "#059669";
             }
+
+            updateQuestionBankUI();
         });
     </script>
 </body>
